@@ -1,0 +1,8 @@
+// @ts-check
+import { defineConfig } from 'astro/config';
+
+export default defineConfig({
+  site: 'https://happypite.github.io',
+  output: 'static',
+  trailingSlash: 'always',
+});

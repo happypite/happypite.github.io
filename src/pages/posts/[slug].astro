@@ -1,0 +1,27 @@
+---
+import BlogLayout from '../../layouts/BlogLayout.astro';
+import { posts, categoryLabel, formatDate } from '../../data/blog';
+import type { Post } from '../../data/blog';
+export function getStaticPaths() {
+  return posts.map(post => ({ params: { slug: post.id }, props: { post } }));
+}
+interface Props { post: Post; }
+const { post } = Astro.props;
+const base = import.meta.env.BASE_URL.replace(/\/?$/, '/');
+const returnUrl = `${base}?category=${post.category}`;
+---
+<BlogLayout title={post.title} description={post.summary} heading="기록" page="post">
+  <article class="reader">
+    <a class="back-link" href={returnUrl}>← 글 목록으로</a>
+    <div class="reader-meta"><a href={returnUrl}>{categoryLabel(post.category)}</a><span aria-hidden="true">·</span><time datetime={post.date}>{formatDate(post.date)}</time></div>
+    <h2>{post.title}</h2>
+    <p class="reader-summary">{post.summary}</p>
+    <div class="reader-body">
+      {post.sections.map((section, index) => <section aria-labelledby={`section-${index + 1}`}>
+        <h3 id={`section-${index + 1}`}>{section.title}</h3>
+        {section.paragraphs.map(paragraph => <p>{paragraph}</p>)}
+      </section>)}
+    </div>
+    <a class="back-link bottom-back" href={returnUrl}>← 글 목록으로</a>
+  </article>
+</BlogLayout>

@@ -1,0 +1,11 @@
+---
+import BlogLayout from '../layouts/BlogLayout.astro';
+import { site } from '../data/blog';
+const base = import.meta.env.BASE_URL.replace(/\/?$/, '/');
+---
+<BlogLayout title="소개" heading="소개" eyebrow="ABOUT" page="about">
+  <section class="about-content">
+    <a class="back-link" href={base}>← 기록으로</a>
+    <h2>{site.author}</h2>
+  </section>
+</BlogLayout>

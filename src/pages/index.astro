@@ -1,0 +1,36 @@
+---
+import BlogLayout from '../layouts/BlogLayout.astro';
+import Icon from '../components/Icon.astro';
+import { categories, posts, categoryLabel, formatDate } from '../data/blog';
+const base = import.meta.env.BASE_URL.replace(/\/?$/, '/');
+---
+<BlogLayout title="기록" heading="기록">
+  <nav slot="categories" class="category-nav" aria-label="글 카테고리">
+    <a href={base} data-category="all" aria-current="page">전체</a>
+    {categories.map(category => <a href={`${base}?category=${category.id}`} data-category={category.id}>{category.label}</a>)}
+  </nav>
+  <div id="archive" data-base={base}>
+    <div class="list-heading"><h2 id="list-heading">전체 기록</h2><span id="result-count" role="status" aria-live="polite" aria-atomic="true">{posts.length}편</span></div>
+    <form id="archive-search" class="archive-search" role="search" action={base} method="get" hidden>
+      <label class="sr-only" for="query">선택한 카테고리에서 검색</label>
+      <Icon name="search" />
+      <input type="hidden" id="scope-category" name="category" disabled />
+      <input type="hidden" id="scope-group" name="group" disabled />
+      <input type="search" id="query" name="q" maxlength="300" autocomplete="off" placeholder="" />
+      <button type="submit">검색 <span aria-hidden="true">↵</span></button>
+    </form>
+    <div class="post-list">
+      {posts.map(post => <article class="post-item" data-post-id={post.id}>
+        <div class="post-meta"><span class="post-category">{categoryLabel(post.category)}</span><span class="meta-separator" aria-hidden="true"></span><time datetime={post.date}>{formatDate(post.date)}</time></div>
+        <h3><a class="post-title" href={`${base}posts/${post.id}/`}>{post.title}</a></h3>
+        <p class="post-summary">{post.summary}</p>
+      </article>)}
+    </div>
+    <div id="empty-state" class="empty-state" hidden={posts.length > 0}>
+      <p id="empty-message">아직 작성된 글이 없습니다.</p>
+      <button type="button" id="clear-query" hidden>검색어 지우기</button>
+      <a href={base} id="reset-scope" hidden>전체 기록 보기</a>
+    </div>
+  </div>
+  <script>import '../scripts/archive';</script>
+</BlogLayout>
