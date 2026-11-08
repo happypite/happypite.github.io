@@ -1,0 +1,1 @@
+export function pageFromPath(pathname){const path=String(pathname||'/').replace(/\/index\.html$/,'').replace(/\/$/,'');return path.endsWith('/world')?'world':path.endsWith('/projects')?'projects':path.endsWith('/about')?'about':'home';}

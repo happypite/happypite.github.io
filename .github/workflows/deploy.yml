@@ -1,35 +1,31 @@
-name: Deploy to GitHub Pages
-
+name: Deploy happypite GitHub Pages
 on:
   push:
     branches: [main]
   workflow_dispatch:
-
 permissions:
   contents: read
   pages: write
   id-token: write
-
 concurrency:
   group: pages
   cancel-in-progress: true
-
 jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v7
-
-      - name: Install, build, and upload site
-        uses: withastro/action@v6
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v6
         with:
-          node-version: "24"
-          package-manager: "npm@11"
-
-      - name: Check archive and search behavior
+          node-version: '24'
+      - uses: actions/configure-pages@v5
+      - name: Check Markdown and static compatibility
         run: npm test
-
+      - name: Build static site
+        run: npm run build:pages
+      - uses: actions/upload-pages-artifact@v4
+        with:
+          path: out/pages
   deploy:
     needs: build
     runs-on: ubuntu-latest
@@ -37,6 +33,6 @@ jobs:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
     steps:
-      - name: Deploy to GitHub Pages
+      - name: Publish
         id: deployment
         uses: actions/deploy-pages@v5

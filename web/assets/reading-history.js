@@ -1,0 +1,8 @@
+const KEY='happypite.reading-history';
+let memory=[];
+export function normalizeHistory(value){if(!Array.isArray(value))return [];const seen=new Set();return value.filter(e=>e&&typeof e.id==='string'&&e.id.length>0&&e.id.length<150&&Number.isFinite(e.progress)&&Number.isFinite(e.readAt)).sort((a,b)=>b.readAt-a.readAt).filter(e=>{if(seen.has(e.id))return false;seen.add(e.id);return true;}).slice(0,20).map(e=>({id:e.id,progress:Math.min(1,Math.max(0,e.progress)),readAt:e.readAt,version:typeof e.version==='string'?e.version.slice(0,100):'',anchor:/^note-heading-\d+$/.test(e.anchor||'')?e.anchor:'',offset:Number.isFinite(e.offset)?Math.min(5000,Math.max(-5000,e.offset)):0}));}
+export function readingHistory(){try{return normalizeHistory(JSON.parse(localStorage.getItem(KEY)||'[]'));}catch{return memory;}}
+export function rememberReading(post,progress,position={}){const record={id:post.id,version:post.updatedAt||post.date||'',progress:Math.min(1,Math.max(0,progress)),readAt:Date.now(),...position},entries=normalizeHistory([record,...readingHistory().filter(e=>e.id!==record.id)]);memory=entries;try{localStorage.setItem(KEY,JSON.stringify(entries));}catch{}return entries.find(e=>e.id===post.id);}
+export function clearReadingHistory(){memory=[];try{localStorage.removeItem(KEY);}catch{}}
+export function recentPosts(posts,history=readingHistory()){const map=new Map(posts.filter(p=>!p.deletedAt).map(p=>[p.id,p]));return normalizeHistory(history).flatMap(h=>map.has(h.id)?[{...map.get(h.id),readingProgress:h.progress}]:[]);}
+export function savedPosition(post){return readingHistory().find(e=>e.id===post.id&&e.version===(post.updatedAt||post.date||'')&&e.progress>.05&&e.progress<.98)||null;}
