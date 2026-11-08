@@ -1,5 +1,5 @@
 import {recentPosts,clearReadingHistory} from './reading-history.js';
-import {ReaderTools,searchExcerpt,relatedPosts,postMarkdown} from './reading.js';
+import {ReaderTools,searchExcerpt,relatedPosts,postMarkdown,tocMarkup} from './reading.js';
 import {githubFileURL} from './github-store.js';
 import {escapeHTML,markdown} from './markdown.js';
 export {escapeHTML,markdown} from './markdown.js';
@@ -38,7 +38,7 @@ export class NotesUI{
   document.querySelector('#detail').dataset.notesMode='reader';
   if(!preserveScroll)main.scrollTop=0;
   const p=this.post;this.onCategory?.(p.category);this.mode='reader';this.tools.hidden=true;this.content.className='';
-  const html=markdown(p.body),headings=[...html.matchAll(/<h([2-6]) id="([^"]+)">(.*?)<\/h[2-6]>/g)],related=relatedPosts(this.store.posts,p);
+  const html=markdown(p.body),related=relatedPosts(this.store.posts,p);
   this.content.innerHTML=`<div class="reader-toolbar"><button data-note-action="back">← 노트 목록</button><div>
    ${this.store.canBookmark&&!p.deletedAt?`<button data-note-action="pin" aria-pressed="${!!p.pinned}">${p.pinned?'★ 중요 노트':'☆ 중요 표시'}</button>`:''}
    <button data-reader-action="share">링크 복사 ↗</button><button data-note-action="download" title="제목·카테고리·태그를 포함한 Markdown 파일">내보내기 ↓</button>
@@ -49,7 +49,7 @@ export class NotesUI{
   <h2>${escapeHTML(p.title)}</h2>${p.summary?'<p class="reader-summary">'+escapeHTML(p.summary)+'</p>':''}
   <div class="reader-tags">${(p.tags||[]).map(t=>`<button data-note-action="tag" data-tag="${escapeHTML(t)}">#${escapeHTML(t)}</button>`).join('')}</div>
   ${this.reading.controls()}
-  ${headings.length?'<details class="reader-toc" '+(headings.length<=5?'open':'')+'><summary>이 노트의 목차 <span>'+headings.length+'개</span></summary><nav>'+headings.map(h=>'<a href="#'+h[2]+'" style="--level:'+h[1]+'">'+h[3]+'</a>').join('')+'</nav></details>':''}
+  ${tocMarkup(html)}
   <div class="markdown-body">${html}</div>
   ${p.url?'<a class="reader-source" href="'+escapeHTML(p.url)+'" target="_blank" rel="noreferrer">참고 자료 보기 ↗</a>':''}
   ${related.length?'<section class="related-notes" aria-label="이어서 읽을 노트"><h3>이어서 읽을 노트</h3><div>'+related.map(r=>'<button data-note-action="read" data-id="'+escapeHTML(r.id)+'"><span>'+escapeHTML(r.title)+'</span><span aria-hidden="true">↗</span></button>').join('')+'</div></section>':''}

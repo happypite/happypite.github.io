@@ -19,6 +19,8 @@ export function postMarkdown(post){
  return '---\n'+Object.entries(data).map(([key,value])=>key+': '+JSON.stringify(value)).join('\n')+'\n---\n\n'+post.body+'\n';
 }
 
+export function tocMarkup(html){const headings=[...html.matchAll(/<h([2-6]) id="([^"]+)">(.*?)<\/h[2-6]>/g)];return headings.length?'<details class="reader-toc" '+(headings.length<=5?'open':'')+'><summary>이 노트의 목차 <span>'+headings.length+'개</span></summary><nav>'+headings.map(h=>'<a href="#'+h[2]+'" style="--level:'+h[1]+'">'+h[3].replace(/<[^>]*>/g,'')+'</a>').join('')+'</nav></details>':'';}
+
 export class ReaderTools{
  constructor(notes){this.notes=notes;this.main=document.querySelector('.collection-main');try{this.size=readingSize(localStorage.getItem('happypite.reading-size'));}catch{this.size=18;}
   this.main.addEventListener('scroll',()=>{if(notes.mode!=='reader'||this.frame)return;this.frame=requestAnimationFrame(()=>{this.frame=0;this.update(true);});},{passive:true});
