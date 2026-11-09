@@ -1,0 +1,32 @@
+/* Give the opening statement a clear silhouette over the moving pavilion. */
+.landing::before{content:'';position:absolute;inset:12% 7% 24%;pointer-events:none;background:radial-gradient(ellipse at 50% 48%,#eff4e9d9 0%,#eff4e9a6 34%,#eff4e947 56%,transparent 73%)}
+.landing-title{top:30%;font-size:clamp(56px,6.2vw,112px);line-height:1.2;letter-spacing:-.045em;font-weight:500;color:#163c3b;text-shadow:0 2px 24px #eff4e966}
+.landing-title strong{font-weight:760;color:#095548}
+.landing-description{top:61%;left:7%;right:7%;width:auto;font-size:clamp(13px,.95vw,17px);line-height:1.7;color:#365953}
+.landing-cta{top:71%;font-size:14px;background:#164e43;color:#f4f8ee;border-color:#164e43;box-shadow:0 6px 24px #174b431c}
+.landing-cta:hover{background:#0c3c33;border-color:#0c3c33}
+.scene-footer{justify-content:center}
+.collection-dialog #detail-close{width:44px;height:44px;justify-content:center;flex-shrink:0;border-radius:50%}
+.collection-dialog #detail-close:hover{background:#dce6d8}
+.collection-header h2{margin-top:0}
+@media(max-width:900px){.site-header .menu-button{margin-left:auto}}
+@media(max-width:650px){
+ .landing::before{inset:15% -18% 25%}
+ .landing-title{top:30%;font-size:clamp(28px,8.5vw,54px);width:94%;line-height:1.3;letter-spacing:-.05em}
+ .landing-description{top:52%;font-size:13px}
+ .landing-cta{top:62%;font-size:13px;min-height:44px}
+}
+@media(max-height:600px) and (min-width:651px){
+ .landing-title{top:26%;font-size:min(5.5vw,13vh);line-height:1.15}
+ .landing-description{top:57%;font-size:13px}
+ .landing-cta{top:67%;padding:9px 20px;min-height:40px}
+ .landing-topics{bottom:54px}
+ .scene-footer{bottom:10px}
+}
+@media(max-height:600px) and (max-width:650px){
+ .landing-title{top:24%;font-size:min(8.5vw,9vh);line-height:1.18}
+ .landing-description{top:47%;font-size:12px}
+ .landing-cta{top:57%;padding:9px 20px}
+ .landing-topics{bottom:60px}
+ .scene-footer{bottom:10px}
+}
