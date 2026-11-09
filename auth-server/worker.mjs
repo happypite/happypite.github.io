@@ -99,8 +99,8 @@ export function createHandler({fetcher=(input,init)=>fetch(input,init),now=()=>D
    const asset=url.pathname.startsWith('/assets/')||['/favicon.ico','/favicon.svg'].includes(url.pathname);
    if(!asset&&!await session(req,env,state))return redirect('/auth/login');
    if(!asset&&!['/','/projects/','/world/','/about/','/admin/'].includes(url.pathname))return json({error:'페이지를 찾을 수 없습니다.'},404);
-   const publicURL=new URL(url.pathname==='/admin/'?'/projects/':url.pathname,PUBLIC_ORIGIN);publicURL.search=url.search;
-   const upstream=await strictFetch(publicURL.href,{method:req.method,headers:{Accept:req.headers.get('Accept')||'*/*'}});
+   const publicURL=new URL(url.pathname==='/admin/'?'/projects/':url.pathname,PUBLIC_ORIGIN);publicURL.search=url.search;publicURL.searchParams.set('_admin_rev','20261109-session-2');
+   const upstream=await strictFetch(publicURL.href,{method:req.method,cache:'no-store',headers:{Accept:req.headers.get('Accept')||'*/*','Cache-Control':'no-cache'}});
    if(req.method==='HEAD')return new Response(null,{status:upstream.status,headers:{...headers,'Content-Type':upstream.headers.get('Content-Type')||'application/octet-stream'}});
    const h=new Headers(headers);h.set('Content-Type',upstream.headers.get('Content-Type')||'application/octet-stream');h.set('Content-Security-Policy',"default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https:; font-src 'self'; connect-src 'self'; frame-src 'self' about:; object-src 'none'; base-uri 'self'; frame-ancestors 'none'; form-action 'self'");
    if(url.pathname==='/assets/records.js'){const script=await upstream.text();return new Response(script+'\nObject.assign(window.ARCHIVE_CONFIG,{authMode:"server",authServerUrl:'+JSON.stringify(env.AUTH_ORIGIN)+'});\n',{status:upstream.status,headers:h});}
