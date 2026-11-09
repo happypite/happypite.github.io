@@ -1,0 +1,21 @@
+{
+  "$schema": "https://unpkg.com/wrangler/config-schema.json",
+  "name": "happypite-admin",
+  "main": "worker.mjs",
+  "compatibility_date": "2026-11-09",
+  "workers_dev": true,
+  "vars": {
+    "AUTH_ORIGIN": "https://happypite-admin.dltjdals500.workers.dev",
+    "GITHUB_CLIENT_ID": "Iv23li36Hm4y9fIOTqvc"
+  },
+  "d1_databases": [
+    {
+      "binding": "AUTH_DB",
+      "database_name": "happypite-auth",
+      "database_id": "f7b3d9d4-7b15-4684-801f-32aec3eb7c31"
+    }
+  ],
+  "observability": {
+    "enabled": false
+  }
+}
