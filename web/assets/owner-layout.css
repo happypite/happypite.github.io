@@ -7,3 +7,5 @@
 
 @media(min-width:600px) and (max-width:900px) and (orientation:landscape){.world-title{top:82px;left:20px;max-width:30vw}.world-title h1{font-size:22px}.world-title p:not(.eyebrow){display:none}.world-browser{top:135px;left:20px;right:auto;width:30vw}.world-search{flex-basis:100%}.world-search-row select{font-size:11px;width:100%}.world-empty{left:67%;top:50%;width:40vw}.world-empty p{font-size:11px}.world-empty h2{font-size:17px}.world-help{left:67%;bottom:65px}.world-empty-orbit{display:none}}
 @media(max-height:700px){.entry{overflow:auto}.entry-inner{min-height:100%;box-sizing:border-box}.about-content{padding-bottom:110px}.menu-panel{overflow-y:auto}}
+
+.gpu-ready .world-post .world-label{display:none}

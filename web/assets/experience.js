@@ -97,3 +97,5 @@ let graphicsStarting=false;async function startGraphics(){if(engine||graphicsSta
 if(requestedNote)dialog.addEventListener('close',()=>startGraphics(),{once:true});else startGraphics();
 
 window.addEventListener('beforeunload',e=>{if(notes.mode==='editor'&&document.querySelector('#edit-body')?.value.trim()){e.preventDefault();e.returnValue='';}});
+
+if(store.staticMode){const syncPublished=()=>{if(!document.hidden&&!store.canManage&&notes.mode!=='editor')store.refresh();};window.addEventListener('focus',syncPublished);document.addEventListener('visibilitychange',syncPublished);setInterval(syncPublished,30000);}
