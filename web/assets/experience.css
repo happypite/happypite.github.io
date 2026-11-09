@@ -71,10 +71,6 @@ body[data-page=projects] .scene-footer .footer-left{font-size:9px;color:#343737}
 
 body[data-page=projects] .header-note{display:none}body[data-page=projects] .grain{opacity:.065}
 .records-content{transform:translate(calc(var(--px)*3.2),calc(var(--py)*1.6))}
-#world-cursor{position:fixed;top:0;left:0;width:40px;height:48px;z-index:67;pointer-events:none;background:url('./cursor-hand.svg') no-repeat center/contain;display:none;image-rendering:pixelated}
-body[data-page=world] #world-cursor{display:block}body.world-dragging #world-cursor{background-image:url('./cursor-grab.svg')}
-@media(pointer:fine){body[data-page=world] #world,body[data-page=world] .world-hotspot,body[data-page=world].world-dragging #world,body[data-page=world].world-dragging .world-hotspot{cursor:none}}
-@media(pointer:coarse){#world-cursor{display:none!important}}
 @media(max-width:650px){.records-content{transform:none}}
 
 /* The gallery stays anchored. Only each cover's mesh responds to the pointer. */
