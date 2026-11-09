@@ -4,6 +4,7 @@ const OWNER_ID=205749646, REPO='happypite/happypite.github.io';
 const categories=['development','ctf-wargame','bug-bounty','documentation','research','activities'];
 export function validateNote(p){
  if(!p.title?.trim()||p.title.length>160||!p.body?.trim()||p.body.length>200000)throw Error('제목(160자 이내)과 본문(20만 자 이내)을 입력하세요.');
+ if(p.fontSize!==undefined&&![16,18,20,22].includes(Number(p.fontSize)))throw Error('본문 글자 크기를 확인하세요.');
  if(!categories.includes(p.category))throw Error('카테고리를 선택하세요.');
  if(!/^\d{4}-\d{2}-\d{2}$/.test(p.date)||!Number.isFinite(Date.parse(p.date))||new Date(p.date).toISOString().slice(0,10)!==p.date)throw Error('날짜를 확인하세요.');
  if(p.url&&!/^https?:\/\//i.test(p.url))throw Error('관련 링크는 https 또는 http 주소를 입력하세요.');
