@@ -66,7 +66,7 @@ export function mountOwnerLogin(store){
  if(store.owner.serverMode){
   const status=document.querySelector('.header-note');if(status)status.textContent='관리자 모드 · GitHub 로그인';
   store.owner.restoreSession().then(async active=>{if(active)connected(await store.owner.load());}).catch(()=>{store.owner.logout();});
-  return async()=>{if(!store.owner.authenticated){location.assign('/auth/login');return;}try{await store.owner.disconnect();store.authorTools=false;store.canWrite=false;store.listeners.forEach(fn=>fn(store.posts));location.assign(store.config.siteUrl||'https://happypite.github.io');}catch(e){alert(e.message);}};
+  return async event=>{if(!store.owner.authenticated){location.assign('/auth/login');return;}const button=event?.currentTarget;if(button){button.disabled=true;button.textContent='로그아웃 중…';}try{await store.owner.disconnect();store.authorTools=false;store.canWrite=false;store.listeners.forEach(fn=>fn(store.posts));location.assign(store.config.siteUrl||'https://happypite.github.io');}catch(e){if(button){button.textContent='로그아웃 다시 시도';const feedback=button.nextElementSibling;if(feedback){feedback.setAttribute('role','status');feedback.textContent=e.message;}}}finally{if(button)button.disabled=false;}};
  }
  if(AUTH_SERVER_URL){return()=>{const url=new URL(AUTH_SERVER_URL);if(url.protocol!=='https:')throw Error('로그인 서버 주소를 확인하세요.');location.assign(url.origin+'/auth/login');};}
 
