@@ -1,3 +1,4 @@
+import {worldViewport} from './world-layout.js';
 import {ArticleGlobe} from './globe.js';
 import {Pavilion} from './pavilion.js';
 import {Gallery} from './gallery.js';
@@ -57,7 +58,7 @@ export class Observatory {
     if(page==='home'){
       const down=tr?.type===2?(tr.to==='projects'?ease(clamp(tr.raw/.8)):1-ease(clamp((tr.raw-.5)/.5))):0;
       camera.position.set(mx*.32,1.5-my*.12-down*7,mobile?19:16);camera.lookAt(mx*.16,.05-my*.08-down*8,-6);camera.updateMatrixWorld();this.pavilion.update(camera,time,this.pointer);
-    }else if(page==='world'){camera.position.set(mx*.3,-my*.2,(mobile?17:14)+this.orbit.depth*(mobile?8:7));camera.lookAt(0,0,0);this.updateWorld(time);}
+    }else if(page==='world'){const view=worldViewport(this.w,this.h,8.3+this.orbit.depth*3.2,camera.fov);camera.setViewOffset(this.w,this.h,-view.x,-view.y,this.w,this.h);camera.position.set(mx*.12,-my*.08,view.distance);camera.lookAt(0,0,0);this.updateWorld(time);}
     else{const enter=tr?.type===2?(tr.to==='projects'?1-ease(clamp((tr.raw-.36)/.64)):ease(clamp(tr.raw/.8))):0;camera.position.set(mx*.28,-my*.20-enter*7,12+enter*7);camera.lookAt(mx*.08,-enter*3,-8);this.archiveLines.rotation.set(my*.01,mx*.012,0);this.archiveFragments.rotation.set(my*.015,mx*.02,0);const advance=(document.querySelector('#records-scroll')?.scrollTop||0)*.008;this.archFrames.forEach(part=>{part.position.z=((part.userData.z+advance+42)%42)-35;});this.archiveFragments.children.forEach((part,i)=>{part.position.y=part.userData.base.y+Math.sin(time*.19+i)*.25;part.position.z=((part.userData.base.z+advance+38)%38)-33;part.rotation.z=time*.025+i;});}
     this.renderer.setRenderTarget(target);this.renderer.render(scene,camera);
   }

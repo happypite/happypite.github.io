@@ -83,3 +83,9 @@ Bug Bounty는 사용자가 제공한 회로형 벌레 이미지를 그대로 표
 자동 검사는 Markdown 입력, 공개 글만 내보내기, 로컬 파일 경로, 서버 없이 검색·읽기, GitHub 편집·삭제 링크, 직접 경로 진입을 확인합니다. 실제 GitHub Actions 배포 성공 여부는 저장소에 적용한 후 확인해야 합니다.
 
 공식 안내: [GitHub Pages](https://docs.github.com/en/pages/getting-started-with-github-pages/what-is-github-pages), [Actions로 Pages 배포](https://docs.github.com/en/pages/getting-started-with-github-pages/using-custom-workflows-with-github-pages), [GitHub에서 파일 만들기](https://docs.github.com/en/repositories/working-with-files/managing-files/creating-new-files).
+
+
+### 홈페이지 안에서 글 관리 (2026-11-09)
+메뉴 → 관리자 연결에서 happypite 계정의 Fine-grained PAT를 연결합니다. 발급 시 이 저장소 하나만 선택하고 Contents: Read and write를 설정합니다. 키는 대화나 소스에 넣지 마세요. 현재 탭 메모리에서만 유지됩니다.
+인증 후 메뉴의 새 노트 작성 또는 글 목록/본문의 작성·수정·삭제를 사용합니다. 임시 저장은 이 브라우저에만 남고 게시하기는 공개 저장소에 커밋합니다. 다른 방문자에게는 Pages 배포 완료 후 반영됩니다. 키 만료/권한 부족은 화면에 안내됩니다. 충돌 시 다시 연결해 최신 글을 연 후 보관된 초안을 비교하세요.
+이 방식은 GitHub Pages만으로 동작하며 별도 로그인 서버가 필요하지 않습니다. GitHub 계정이나 인증 키를 다른 사람에게 공유하지 마세요.

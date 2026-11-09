@@ -1,0 +1,16 @@
+import test from 'node:test';import assert from 'node:assert/strict';
+import {OwnerStore,validateNote} from '../web/assets/owner-store.js';
+import {worldViewport} from '../web/assets/world-layout.js';
+import {parsePost} from '../scripts/build-pages.mjs';
+const config={branch:'main'},post={category:'development',title:'보안 실습',date:'2026-11-09',body:'## 한글\n\n코드와 공부',tags:['보안'],status:'published'};
+function mock(t,handler){const old=globalThis.fetch;globalThis.fetch=async(url,opts)=>{const data=await handler(url,opts);return {ok:data.status?data.status<400:true,status:data.status||200,json:async()=>data.body??data};};t.after(()=>globalThis.fetch=old);}
+test('unauthenticated writes never send any request and UI toggle cannot authorize',async t=>{let calls=0;mock(t,()=>{calls++;throw Error('unexpected');});const s=new OwnerStore(config);await assert.rejects(s.save(post),/인증/);await assert.rejects(s.remove('x'));assert.equal(calls,0);});
+test('a different GitHub account is rejected before repository access',async t=>{let calls=0;mock(t,()=>{calls++;return {id:1};});const s=new OwnerStore(config);await assert.rejects(s.login('other'),/본인/);assert.equal(s.authenticated,false);assert.equal(calls,1);});
+test('owner authentication, Korean publish, update, conflict and deletion use authenticated GitHub requests',async t=>{
+ let source='',sha='one',path='',writes=0;
+ mock(t,(url,o)=>{assert.equal(o.headers.Authorization,'Bearer owner-test');if(url.endsWith('/user'))return {id:205749646};if(url.endsWith('/repos/happypite/happypite.github.io'))return {permissions:{push:true}};if(url.includes('/git/trees/'))return {tree:source?[{path,type:'blob'}]:[]};if(o.method==='PUT'){const body=JSON.parse(o.body);if(writes&&body.sha!==sha)return {status:409};path=decodeURIComponent(url.split('/contents/')[1]);source=Buffer.from(body.content,'base64').toString('utf8');sha='two';writes++;return {content:{sha}};}if(o.method==='DELETE'){assert.equal(JSON.parse(o.body).sha,sha);source='';return {};}return {sha,content:Buffer.from(source).toString('base64')};});
+ const s=new OwnerStore(config);await s.login('owner-test');assert.equal(s.authenticated,true);const result=await s.save(post);assert.equal(result.post.title,post.title);const parsed=parsePost(source,path);assert.equal(parsed.id,result.post.id);assert.equal(parsed.body,post.body);assert.equal(parsed.updatedAt,'2026-11-09T00:00:00.000Z');
+ const edited=await s.save({...result.post,body:'수정 내용'});assert.equal(edited.post.body,'수정 내용');sha='external-change';await assert.rejects(s.save(edited.post),/다른 곳/);sha='two';assert.deepEqual(await s.remove(edited.post.id),[]);s.logout();assert.equal(s.authenticated,false);
+});
+test('invalid date, empty note and dangerous URL are rejected before publishing',()=>{assert.throws(()=>validateNote({...post,date:'2026-02-30'}));assert.throws(()=>validateNote({...post,body:' '}));assert.throws(()=>validateNote({...post,url:'javascript:alert(1)'}));});
+test('globe and attached cards fit available width and height across viewports',()=>{for(const [w,h] of [[320,568],[390,844],[844,390],[1280,720],[1366,768],[1920,1080],[2560,1317],[3840,2160]]){const v=worldViewport(w,h);const projectedRadius=11.5/Math.sqrt(v.distance**2-11.5**2)*h/(2*Math.tan(49*Math.PI/360));assert.ok(projectedRadius*2<=v.width);assert.ok(projectedRadius*2<=v.height);}});
