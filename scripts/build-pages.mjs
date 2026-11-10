@@ -37,6 +37,25 @@ export function checkPages(output){
  for(const forbidden of ['server','.openai','.local','worker','posts.sqlite'])if(fs.existsSync(path.join(output,forbidden)))missing.push('배포하면 안 되는 파일: '+forbidden);
  if(missing.length)throw Error('Pages 경로 검사 실패:\n'+missing.join('\n'));return checked;
 }
+export function versionAssets(output){
+ const files=[];walk(output,file=>files.push(file));files.sort((a,b)=>path.relative(output,a).replaceAll('\\','/').localeCompare(path.relative(output,b).replaceAll('\\','/'),'en'));
+ const hash=createHash('sha256');for(const file of files)hash.update(path.relative(output,file).replaceAll('\\','/')+'\0').update(fs.readFileSync(file)).update('\0');
+ const version=hash.digest('hex').slice(0,16);
+ const versionURL=ref=>{
+  if(/^(?:[a-z][a-z\d+.-]*:|\/\/|#)/i.test(ref))return ref;
+  const hashAt=ref.indexOf('#'),fragment=hashAt<0?'':ref.slice(hashAt),address=hashAt<0?ref:ref.slice(0,hashAt),queryAt=address.indexOf('?'),pathname=queryAt<0?address:address.slice(0,queryAt);
+  if(!/\.(?:m?js|css)$/i.test(pathname))return ref;
+  const query=new URLSearchParams(queryAt<0?'':address.slice(queryAt+1));query.set('v',version);return pathname+'?'+query+fragment;
+ };
+ for(const file of files){
+  const ext=path.extname(file);if(!['.html','.js','.mjs'].includes(ext)||path.relative(output,file).replaceAll('\\','/')==='assets/records.js')continue;
+  const source=fs.readFileSync(file,'utf8'),updated=ext==='.html'
+   ?source.replace(/(<(?:script|link)\b[^>]*?\b(?:src|href)\s*=\s*)(["'])([^"']+)\2/gi,(match,prefix,quote,ref)=>prefix+quote+versionURL(ref)+quote)
+   :source.replace(/(\bfrom\s*|\bimport\s*(?:\(\s*)?)(["'])(\.{1,2}\/[^"'\r\n]+)\2/g,(match,prefix,quote,ref)=>prefix+quote+versionURL(ref)+quote);
+  if(updated!==source)fs.writeFileSync(file,updated);
+ }
+ return version;
+}
 export function buildPages(projectRoot=process.cwd()){
  const root=fs.realpathSync(projectRoot),output=path.resolve(root,'out/pages'),parent=path.dirname(output),config=JSON.parse(fs.readFileSync(path.join(root,'github-pages.config.json'),'utf8'));
  if(config.siteUrl!=='https://happypite.github.io'||config.repository!=='happypite/happypite.github.io')throw Error('배포 대상은 happypite.github.io로 설정해야 합니다.');
@@ -55,6 +74,6 @@ export function buildPages(projectRoot=process.cwd()){
  fs.writeFileSync(path.join(output,'404.html'),'<!doctype html><html lang="ko"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>happypite</title><body style="font-family:system-ui;background:#f1f4ed;color:#36594c;display:grid;place-content:center;min-height:95vh;text-align:center"><h1>페이지를 찾을 수 없습니다.</h1><p>주소를 확인하거나 기록 목록에서 글을 찾아보세요.</p><a href="/projects/">노트 목록으로 ↗</a></body></html>');
  fs.writeFileSync(path.join(output,'robots.txt'),'User-agent: *\nAllow: /\nSitemap: '+config.siteUrl+'/sitemap.xml\n');
  fs.writeFileSync(path.join(output,'sitemap.xml'),'<?xml version="1.0" encoding="UTF-8"?><urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">'+['/','/projects/','/world/','/about/'].map(p=>'<url><loc>'+config.siteUrl+p+'</loc></url>').join('')+'</urlset>');
- const media=exportMedia(root,output,posts),references=checkPages(output);return {output,posts:posts.length,references,media};
+ const media=exportMedia(root,output,posts),version=versionAssets(output),references=checkPages(output);return {output,posts:posts.length,references,media,version};
 }
 if(process.argv[1]&&import.meta.url===pathToFileURL(path.resolve(process.argv[1])).href){const result=buildPages();console.log('GitHub Pages: '+result.output+' · '+result.posts+' posts · '+result.references+' local paths checked');}
