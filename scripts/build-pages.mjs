@@ -65,7 +65,7 @@ export function buildPages(projectRoot=process.cwd()){
  if(fs.existsSync(output)){if(fs.lstatSync(output).isSymbolicLink()||fs.realpathSync(output)!==output||!output.startsWith(root+path.sep+'out'+path.sep))throw Error('안전하지 않은 빌드 경로입니다.');fs.rmSync(output,{recursive:true});}
  fs.mkdirSync(output,{recursive:true});
  const frontend=fs.existsSync(path.join(root,'web/index.html'))?path.join(root,'web'):path.join(root,'dist');
- for(const name of ['index.html','assets','projects','world','about','.nojekyll']){const source=path.join(frontend,name);if(!fs.existsSync(source))throw Error('프런트엔드 파일을 찾을 수 없습니다: '+name);fs.cpSync(source,path.join(output,name),{recursive:true,dereference:false});}
+ for(const name of ['index.html','assets','projects','world','about','portfolio','.nojekyll']){const source=path.join(frontend,name);if(!fs.existsSync(source))throw Error('프런트엔드 파일을 찾을 수 없습니다: '+name);fs.cpSync(source,path.join(output,name),{recursive:true,dereference:false});}
  const posts=[];walk(path.join(root,config.contentPath),file=>{if(!file.endsWith('.md')||path.basename(file).startsWith('_'))return;const sourcePath=path.relative(root,file).replaceAll('\\','/'),post=parsePost(fs.readFileSync(file,'utf8'),sourcePath);if(post)posts.push(post);});
  posts.sort((a,b)=>b.date.localeCompare(a.date)||a.title.localeCompare(b.title,'ko'));
  const runtime={mode:'github-pages',repository:config.repository,branch:config.branch,contentPath:config.contentPath,siteUrl:config.siteUrl};
@@ -73,7 +73,7 @@ export function buildPages(projectRoot=process.cwd()){
  fs.writeFileSync(path.join(output,'assets/posts.json'),JSON.stringify({posts}));
  fs.writeFileSync(path.join(output,'404.html'),'<!doctype html><html lang="ko"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>happypite</title><body style="font-family:system-ui;background:#f1f4ed;color:#36594c;display:grid;place-content:center;min-height:95vh;text-align:center"><h1>페이지를 찾을 수 없습니다.</h1><p>주소를 확인하거나 기록 목록에서 글을 찾아보세요.</p><a href="/projects/">노트 목록으로 ↗</a></body></html>');
  fs.writeFileSync(path.join(output,'robots.txt'),'User-agent: *\nAllow: /\nSitemap: '+config.siteUrl+'/sitemap.xml\n');
- fs.writeFileSync(path.join(output,'sitemap.xml'),'<?xml version="1.0" encoding="UTF-8"?><urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">'+['/','/projects/','/world/','/about/'].map(p=>'<url><loc>'+config.siteUrl+p+'</loc></url>').join('')+'</urlset>');
+ fs.writeFileSync(path.join(output,'sitemap.xml'),'<?xml version="1.0" encoding="UTF-8"?><urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">'+['/','/projects/','/world/','/about/','/portfolio/'].map(p=>'<url><loc>'+config.siteUrl+p+'</loc></url>').join('')+'</urlset>');
  const media=exportMedia(root,output,posts),version=versionAssets(output),references=checkPages(output);return {output,posts:posts.length,references,media,version};
 }
 if(process.argv[1]&&import.meta.url===pathToFileURL(path.resolve(process.argv[1])).href){const result=buildPages();console.log('GitHub Pages: '+result.output+' · '+result.posts+' posts · '+result.references+' local paths checked');}

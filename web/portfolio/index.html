@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="theme-color" content="#f6f7f4">
+  <meta name="description" content="나의 선택 기준, 활동 기록, 앞으로의 방향을 연결하는 개인 포트폴리오.">
+  <title>포트폴리오 · happypite</title>
+  <link rel="icon" href="/assets/favicon.svg">
+  <link rel="stylesheet" href="styles.css">
+  <script src="/assets/records.js" defer></script>
+  <script src="app.js" defer></script>
+</head>
+<body>
+  <a class="skip" href="#main" data-scroll="main">본문 바로가기</a>
+  <header class="header">
+    <a href="#/" class="brand" aria-label="포트폴리오 처음으로"><span aria-hidden="true">[·]</span> happypite<span class="brand-sub">/ portfolio</span></a>
+    <nav id="sidebar" class="site-navigation" aria-label="전체 메뉴"></nav>
+    <div class="header-tools"><span class="draft-status">본문 작성 전</span><button id="guide-toggle" type="button" aria-pressed="false">작성 안내 <span class="toggle-state">OFF</span></button></div>
+    <a class="blog-link" href="/">홈페이지 <span aria-hidden="true">↗</span></a>
+  </header>
+  <div class="app-layout">
+    <main id="main" tabindex="-1"></main>
+  </div>
+  <footer class="footer"><span>happypite / portfolio</span><span>소개 · 활동 · 회고</span></footer>
+  <div id="toast" role="status" aria-live="polite"></div>
+</body>
+</html>
