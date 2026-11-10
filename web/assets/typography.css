@@ -1,0 +1,8 @@
+@font-face{font-family:'Gowun Batang';src:url('./fonts/GowunBatang-Regular.woff2') format('woff2');font-style:normal;font-weight:400;font-display:swap}
+@font-face{font-family:'Gowun Batang';src:url('./fonts/GowunBatang-Bold.woff2') format('woff2');font-style:normal;font-weight:700;font-display:swap}
+:root{--font-ui:'Gowun Batang',serif;--font-display:var(--font-ui);--mono:var(--font-ui);--font-code:'JetBrains Mono','Gowun Batang',monospace}
+html,body,button,input,select,textarea,.logo-svg text{font-family:var(--font-ui)}
+.landing-title,.markdown-body,.note-reader .markdown-body,.editor-panes textarea,.editor-panes #edit-preview{font-family:var(--font-ui)}
+.header-note,.eyebrow,.home-subline,.home-annotation,.scene-footer,.motion-button,.record-meta,.menu-panel>a small,.menu-bottom,.entry-footer,.detail-foot,.entry-status,.header-tools kbd,.note-search input,.note-search kbd,.note-tools-bottom select,.editor-fields input,.editor-fields textarea,.editor-fields select,.world-search input,.world-search-row select,.menu-shortcuts>button kbd,.github-editor select,.owner-login,.owner-login input,.brand>span:first-child{font-family:var(--font-ui)}
+.entry-status{font-family:var(--font-ui)!important}
+.markdown-body pre,.markdown-body code,.note-reader .markdown-body :not(pre)>code,.github-help code,.code-language{font-family:var(--font-code)}
