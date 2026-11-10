@@ -45,3 +45,12 @@
  .landing-topics{bottom:60px}
  .scene-footer{bottom:10px}
 }
+
+/* Category objects float freely; names appear on hover or keyboard focus. */
+.world-hotspot[data-world-topic]{border-radius:50%;background:transparent}
+.world-hotspot[data-world-topic] .world-label{top:94%;bottom:auto;left:50%;right:auto;transform:translateX(-50%);display:block;width:max-content;max-width:230px;text-align:center;font-size:14px;font-weight:600;line-height:1.5;color:#e7f2e8;text-shadow:0 2px 5px #00100f,0 0 12px #00100f;opacity:0;transition:opacity .18s;pointer-events:none}
+.world-hotspot[data-world-topic] .world-label>span:last-child{display:none}
+.world-hotspot[data-world-topic]:hover .world-label,.world-hotspot[data-world-topic]:focus-visible .world-label{opacity:1}
+.gpu-fallback[data-world=categories] .world-hotspots{grid-template-columns:repeat(3,minmax(0,1fr));grid-template-rows:repeat(2,minmax(0,1fr));align-items:center;justify-items:center}
+.gpu-fallback .world-hotspot[data-world-topic]{aspect-ratio:1;width:min(100%,150px)!important}
+@media(hover:none),(pointer:coarse),(max-width:650px){.world-hotspot[data-world-topic] .world-label{opacity:1;font-size:12px;max-width:min(180px,40vw);word-break:keep-all}}

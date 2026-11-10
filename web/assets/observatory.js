@@ -4,7 +4,7 @@ import {Pavilion} from './pavilion.js';
 import {Gallery} from './gallery.js';
 import {PointerFlow} from './flow.js';
 import * as THREE from './vendor/three.module.js';
-import {topics,symbolSVG} from './symbols.js';
+import {topics,symbolSVG,emblemSVG} from './symbols.js';
 const clamp=(v,a=0,b=1)=>Math.min(b,Math.max(a,v)),ease=v=>v<.5?4*v*v*v:1-Math.pow(-2*v+2,3)/2;
 const quadVertex=`varying vec2 vUv;void main(){vUv=uv;gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.);}`;
 export class Observatory {
@@ -44,9 +44,16 @@ export class Observatory {
     for(let i=0;i<65;i++){const part=new THREE.Mesh(paper,new THREE.MeshMatcapMaterial({color:i%3?'#c6cdd2':'#fcfcfa',matcap,side:THREE.DoubleSide}));part.position.set(Math.sin(i*5.91)*7,Math.cos(i*2.71)*7,-4-Math.abs(Math.sin(i))*28);part.userData.base=part.position.clone();part.rotation.set(i*.6,i*.4,i*.9);part.scale.setScalar(.7+(i%4)*.5);this.archiveFragments.add(part);}scene.add(this.archiveFragments);return scene;
   }
   worldScene(){this.orbit=new ArticleGlobe();return this.orbit.scene;}
-  setWorldRoot(){if(!this.textures)return;this.orbit.setRoot(this.textures,topics);this.targetRotation.set(.06,0);this.rotation.copy(this.targetRotation);this.spin.set(0,0);}
+  setWorldRoot(){if(!this.worldTextures)return;this.orbit.setRoot(this.worldTextures,topics);this.targetRotation.set(.06,0);this.rotation.copy(this.targetRotation);this.spin.set(0,0);}
   setWorldPosts(topic,posts){this.orbit.setTopic(topic,posts);this.targetRotation.set(.05,0);this.rotation.copy(this.targetRotation);this.spin.set(0,0);}
-  async loadTextures(){this.textures=await Promise.all(topics.map((topic,i)=>new Promise((resolve,reject)=>{const svg=symbolSVG(topic,'gpu').replace('<svg ','<svg width="560" height="320" ').replace(/ aria-hidden="true"/g,'');const url=URL.createObjectURL(new Blob([svg],{type:'image/svg+xml'}));const img=new Image();img.onload=()=>{try{const c=document.createElement('canvas');c.width=560;c.height=320;const ctx=c.getContext('2d');ctx.drawImage(img,0,0,560,320);const texture=new THREE.CanvasTexture(c);texture.colorSpace=THREE.SRGBColorSpace;texture.minFilter=THREE.LinearFilter;texture.generateMipmaps=false;URL.revokeObjectURL(url);resolve(texture);}catch(e){reject(e);}};img.onerror=reject;img.src=url;})));this.orbit.setRoot(this.textures,topics);await document.fonts.ready;this.gallery=new Gallery(this.renderer,this.textures,this.flow);document.body.classList.add('gpu-ready');this.bindTiles();}
+  async loadTextures(){
+    const raster=(svg,width,height)=>new Promise((resolve,reject)=>{const url=URL.createObjectURL(new Blob([svg],{type:'image/svg+xml'})),img=new Image();img.onload=()=>{try{const canvas=document.createElement('canvas');canvas.width=width;canvas.height=height;canvas.getContext('2d').drawImage(img,0,0,width,height);const texture=new THREE.CanvasTexture(canvas);texture.colorSpace=THREE.SRGBColorSpace;texture.minFilter=THREE.LinearFilter;texture.generateMipmaps=false;resolve(texture);}catch(error){reject(error);}finally{URL.revokeObjectURL(url);}};img.onerror=()=>{URL.revokeObjectURL(url);reject(Error('카테고리 아이콘을 불러오지 못했습니다.'));};img.src=url;});
+    [this.textures,this.worldTextures]=await Promise.all([
+      Promise.all(topics.map(topic=>raster(symbolSVG(topic,'gpu').replace('<svg ','<svg width="560" height="320" ').replace(/ aria-hidden="true"/g,''),560,320))),
+      Promise.all(topics.map(topic=>raster(emblemSVG(topic,'world-icon'),600,600)))
+    ]);
+    this.orbit.setRoot(this.worldTextures,topics);await document.fonts.ready;this.gallery=new Gallery(this.renderer,this.textures,this.flow);document.body.classList.add('gpu-ready');this.bindTiles();
+  }
   resume(){this.last=0;this.pointerEnergy=0;this.smoothEnergy=0;this.flow.started=false;}
   bindTiles(){this.gallery?.bind();}
   onPointer(e){const x=e.clientX/this.w,y=e.clientY/this.h;this.pointerEnergy=Math.min(1,Math.hypot(x-this.lastPointer.x,y-this.lastPointer.y)*16);this.pointer.set(x-.5,y-.5);this.lastPointer.set(x,y);}
