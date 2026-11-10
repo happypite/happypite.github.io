@@ -45,8 +45,8 @@ test('editing or removing the last tagged article updates the index without a se
 });
 test('homepage and drawer link to the portfolio while required empty sections remain available',()=>{
  const home=fs.readFileSync(new URL('../web/index.html',import.meta.url),'utf8');
- assert.ok(home.includes('href="/portfolio/">포트폴리오'));
- assert.ok(home.includes('href="/portfolio/"><svg'));
+ assert.ok(home.includes('href="/about/" data-route="about">포트폴리오'));
+ assert.ok(home.includes('href="/about/" data-route="about"><svg'));
  const html=fs.readFileSync(new URL('../web/portfolio/index.html',import.meta.url),'utf8');
  assert.ok(html.indexOf('/assets/records.js')<html.indexOf('src="app.js"'));
  const run=portfolio();
