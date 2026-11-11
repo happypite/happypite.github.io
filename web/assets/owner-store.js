@@ -1,9 +1,11 @@
+import {scrapMetadata} from './scrap-model.js';
 import {AUTH_SERVER_URL} from './auth-config.js';
 import {postMarkdown} from './reading.js';
 import {localDay} from './github-store.js';
 const OWNER_ID=205749646, REPO='happypite/happypite.github.io';
 const categories=['development','ctf-wargame','bug-bounty','documentation','research','activities'];
 export function validateNote(p){
+ scrapMetadata(p);
  if(!p.title?.trim()||p.title.length>160||!p.body?.trim()||p.body.length>200000)throw Error('제목(160자 이내)과 본문(20만 자 이내)을 입력하세요.');
  if(p.fontSize!==undefined&&![16,18,20,22].includes(Number(p.fontSize)))throw Error('본문 글자 크기를 확인하세요.');
  if(!categories.includes(p.category))throw Error('카테고리를 선택하세요.');
@@ -48,7 +50,7 @@ export class OwnerStore{
    const p={tags:[]};let arrayKey='';for(const line of match[1].split('\n')){if(arrayKey&&/^\s+- /.test(line)){p[arrayKey].push(line.trim().slice(2).replace(/^['"]|['"]$/g,''));continue;}const m=line.match(/^([\w-]+):\s*(.*)$/);if(!m)continue;arrayKey='';try{p[m[1]]=JSON.parse(m[2]);}catch{p[m[1]]=m[2].replace(/^['"]|['"]$/g,'');if(m[1]==='tags'){p.tags=m[2]?m[2].replace(/^\[|\]$/g,'').split(',').map(s=>s.trim().replace(/^['"]|['"]$/g,'')):[];if(!m[2])arrayKey='tags';}}}
    if(p.status!=='published')continue;
    const id='gh-'+(await digest(f.path)).slice(0,20);this.shas.set(id,file.sha);this.paths.set(id,f.path);
-   posts.push({...p,id,body:match[2].trim(),sourcePath:f.path,contentVersion:await digest(text),createdAt:p.date+'T00:00:00.000Z',updatedAt:(p.updated||p.date)+'T00:00:00.000Z'});
+   posts.push({...p,...scrapMetadata(p),id,body:match[2].trim(),sourcePath:f.path,contentVersion:await digest(text),createdAt:p.date+'T00:00:00.000Z',updatedAt:(p.updated||p.date)+'T00:00:00.000Z'});
   }return posts;
  }
  async save(p){

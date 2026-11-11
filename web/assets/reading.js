@@ -1,3 +1,4 @@
+import {scrapMetadata} from './scrap-model.js';
 import {rememberReading,savedPosition} from './reading-history.js';
 import {escapeHTML} from './markdown.js';
 
@@ -15,7 +16,7 @@ export function relatedPosts(posts,current,limit=3){
 }
 export function noteURL(origin,id){const url=new URL('/projects/',origin);url.searchParams.set('note',String(id));return url.href;}
 export function postMarkdown(post){
- const data={title:post.title,category:post.category,date:post.date,summary:post.summary||'',tags:post.tags||[],status:post.status==='draft'?'draft':'published',fontSize:readingSize(post.fontSize),pinned:post.pinned===true,...(post.url?{url:post.url}:{})};
+ const data={...scrapMetadata(post),title:post.title,category:post.category,date:post.date,summary:post.summary||'',tags:post.tags||[],status:post.status==='draft'?'draft':'published',fontSize:readingSize(post.fontSize),pinned:post.pinned===true,...(post.url?{url:post.url}:{})};
  return '---\n'+Object.entries(data).map(([key,value])=>key+': '+JSON.stringify(value)).join('\n')+'\n---\n\n'+post.body+'\n';
 }
 
