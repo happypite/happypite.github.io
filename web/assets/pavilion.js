@@ -71,10 +71,10 @@ export class Pavilion {
     this.resize();
   }
   environment(){
-    const c=document.createElement('canvas');c.width=1024;c.height=512;
-    const x=c.getContext('2d'),g=x.createLinearGradient(0,0,0,512);
-    g.addColorStop(0,'#a4cad8');g.addColorStop(.5,'#e6eadf');g.addColorStop(1,'#638f99');x.fillStyle=g;x.fillRect(0,0,1024,512);
-    x.fillStyle='#fff8e8';x.fillRect(100,50,130,220);x.fillStyle='#d8f0e8';x.fillRect(650,100,260,160);
+    const c=document.createElement('canvas');c.width=512;c.height=256;
+    const x=c.getContext('2d'),g=x.createLinearGradient(0,0,0,256);
+    g.addColorStop(0,'#a4cad8');g.addColorStop(.5,'#e6eadf');g.addColorStop(1,'#638f99');x.fillStyle=g;x.fillRect(0,0,512,256);
+    x.fillStyle='#fff8e8';x.fillRect(50,25,65,110);x.fillStyle='#d8f0e8';x.fillRect(325,50,130,80);
     const texture=new THREE.CanvasTexture(c);texture.colorSpace=THREE.SRGBColorSpace;texture.mapping=THREE.EquirectangularReflectionMapping;
     const pm=new THREE.PMREMGenerator(this.renderer),env=pm.fromEquirectangular(texture).texture;texture.dispose();pm.dispose();return env;
   }

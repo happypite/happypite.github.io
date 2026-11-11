@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {cleanPortfolioTag,portfolioPosts,portfolioTags,selectPortfolioPosts,portfolioMarkup,portfolioReadingSection} from '../web/assets/portfolio-native.js';
+import {cleanPortfolioTag,portfolioPosts,portfolioTags,selectPortfolioPosts,portfolioMarkup,portfolioReadingSection,NativePortfolio} from '../web/assets/portfolio-native.js';
 
 const topics=[{id:'development',name:'개발'},{id:'research',name:'논문/컨퍼런스'}];
 const first={id:'first',status:'published',category:'development',date:'2026-11-10',title:'가나다',tags:[' #2026 ','2026','실습']};
@@ -51,4 +51,17 @@ test('reading position follows section boundaries, upward scrolling, resized con
  const expanded=sections.map(section=>({...section,top:section.top+(section.id==='archive'||section.id==='direction'?500:0)}));
  assert.equal(portfolioReadingSection(expanded,850),'experiences');
  assert.equal(portfolioReadingSection([],100),null);
+});
+
+
+test('portfolio jumps clear the full mobile rail when fonts wrap it onto another row',t=>{
+ const previous=globalThis.getComputedStyle;let direction='row',height=67;
+ globalThis.getComputedStyle=()=>({flexDirection:direction});t.after(()=>globalThis.getComputedStyle=previous);
+ const nav={},rail={querySelector:()=>nav,getBoundingClientRect:()=>({height})},writes=[];
+ const instance={root:{querySelector:()=>rail,style:{setProperty:(name,value)=>writes.push([name,value])}}};
+ const update=()=>NativePortfolio.prototype.updateScrollOffset.call(instance);
+ assert.equal(update(),92);assert.deepEqual(writes.at(-1),['--portfolio-scroll-offset','92px']);
+ height=111;assert.equal(update(),136);assert.equal(writes.length,2);
+ update();assert.equal(writes.length,2);
+ direction='column';assert.equal(update(),25);assert.equal(writes.at(-1)[1],'25px');
 });

@@ -61,7 +61,7 @@ export function createHandler({fetcher=(input,init)=>fetch(input,init),now=()=>D
   const state=new State(env,now);
   try{
    if(url.pathname==='/auth/login'&&req.method==='GET'){
-    if(!await state.rate('login:'+(req.headers.get('CF-Connecting-IP')||'unknown'),12))return json({error:'로그인 요청이 많습니다. 잠시 후 다시 시도해 주세요.'},429);await state.cleanup();if(await session(req,env,state))return redirect('/projects/');
+    if(!await state.rate('login:'+(req.headers.get('CF-Connecting-IP')||'unknown'),12))return json({error:'로그인 요청이 많습니다. 잠시 후 다시 시도해 주세요.'},429);await state.cleanup();if(await session(req,env,state))return redirect('/');
     const nonce=random(),verifier=random();await state.put('oauth:'+await digest(nonce),{verifier},now()+600000);
     const auth=new URL('https://github.com/login/oauth/authorize');auth.search=new URLSearchParams({client_id:env.GITHUB_CLIENT_ID,redirect_uri:env.AUTH_ORIGIN+'/auth/callback',state:nonce,code_challenge:await digest(verifier),code_challenge_method:'S256',login:'happypite',allow_signup:'false',scope:'offline_access'}).toString();
     return redirect(auth.href,[cookie(FLOW,nonce,600)]);
@@ -73,7 +73,7 @@ export function createHandler({fetcher=(input,init)=>fetch(input,init),now=()=>D
     const flow=await state.read('oauth:'+await digest(nonce),true);if(!flow)return page('만료된 로그인 요청','관리자 로그인을 다시 눌러 주세요.',400);
     try{const data=await tokenRequest(env,{code,code_verifier:flow.verifier,redirect_uri:env.AUTH_ORIGIN+'/auth/callback',repository_id:'1436415253'});await validateOwner(data.access_token);await validateRepository(data.access_token);
      const id=random(),until=now()+Math.min(AGE,data.refresh_token?AGE:Number(data.expires_in)*1000);await state.put('session:'+await digest(id),{ownerId:OWNER_ID,until,...tokenFields(data)},until);
-     return redirect('/projects/',[clear,cookie(SESSION,id,(until-now())/1000)]);
+     return redirect('/',[clear,cookie(SESSION,id,(until-now())/1000)]);
     }catch(e){const r=page('관리자 로그인 실패',e.message,403);r.headers.append('Set-Cookie',clear);return r;}
    }
    if(url.pathname==='/api/session'&&req.method==='GET'){const s=await session(req,env,state);return json({authenticated:!!s,...(s?{login:'happypite',expiresAt:s.value.until}:{})});}
@@ -98,8 +98,8 @@ export function createHandler({fetcher=(input,init)=>fetch(input,init),now=()=>D
    if(!['GET','HEAD'].includes(req.method))return json({error:'지원하지 않는 요청입니다.'},405);
    const asset=url.pathname.startsWith('/assets/')||['/favicon.ico','/favicon.svg'].includes(url.pathname);
    if(!asset&&!await session(req,env,state))return redirect('/auth/login');
-   if(!asset&&!['/','/projects/','/world/','/about/','/admin/'].includes(url.pathname))return json({error:'페이지를 찾을 수 없습니다.'},404);
-   const publicURL=new URL(url.pathname==='/admin/'?'/projects/':url.pathname,PUBLIC_ORIGIN);publicURL.search=url.search;publicURL.searchParams.set('_admin_rev','20261109-session-2');
+   if(!asset&&!['/','/projects/','/world/','/about/','/read/','/admin/'].includes(url.pathname))return json({error:'페이지를 찾을 수 없습니다.'},404);
+   const publicURL=new URL(url.pathname==='/admin/'?'/':url.pathname,PUBLIC_ORIGIN);publicURL.search=url.search;publicURL.searchParams.set('_admin_rev','20261109-session-2');
    const upstream=await strictFetch(publicURL.href,{method:req.method,cache:'no-store',headers:{Accept:req.headers.get('Accept')||'*/*','Cache-Control':'no-cache'}});
    if(req.method==='HEAD')return new Response(null,{status:upstream.status,headers:{...headers,'Content-Type':upstream.headers.get('Content-Type')||'application/octet-stream'}});
    const h=new Headers(headers);h.set('Content-Type',upstream.headers.get('Content-Type')||'application/octet-stream');h.set('Content-Security-Policy',"default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https:; font-src 'self'; connect-src 'self'; frame-src 'self' about:; object-src 'none'; base-uri 'self'; frame-ancestors 'none'; form-action 'self'");

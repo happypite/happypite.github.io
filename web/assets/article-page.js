@@ -1,4 +1,3 @@
-import {AUTH_SERVER_URL} from './auth-config.js';
 import {PostStore,NotesUI} from './notes.js';
 import {topics} from './symbols.js';
 import {ImageViewer} from './media.js';
@@ -8,10 +7,6 @@ import {articleURL,articleListURL} from './article-links.js';
 const store=new PostStore(window.ARCHIVE_RECORDS||[]),host=document.querySelector('#detail');
 const notes=new NotesUI(store,topics),id=new URL(location.href).searchParams.get('note');
 new ImageViewer();mountOwnerLogin(store);
-const $=selector=>document.querySelector(selector);
-const adminEntry=document.createElement('a');adminEntry.className='site-admin-entry';adminEntry.href=AUTH_SERVER_URL?AUTH_SERVER_URL+'/auth/login':'/projects/?manage=1';adminEntry.setAttribute('aria-label','관리자 로그인');adminEntry.title='관리자 로그인';adminEntry.innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><circle cx="12" cy="8" r="3.5"/><path d="M5 21v-2a7 7 0 0 1 14 0v2"/></svg><span>관리자 로그인</span>';$('.site-header').append(adminEntry);
-function syncAdminEntry(){const active=store.canManage;adminEntry.href=active?'/projects/?manage=1':AUTH_SERVER_URL?AUTH_SERVER_URL+'/auth/login':'/projects/?manage=1';adminEntry.setAttribute('aria-label',active?'글 관리':'관리자 로그인');adminEntry.title=active?'글 관리':'관리자 로그인';adminEntry.querySelector('span').textContent=active?'글 관리':'관리자 로그인';}
-store.listeners.push(syncAdminEntry);syncAdminEntry();
 const collectionBack=document.createElement('a');collectionBack.className='article-collection-back';collectionBack.href='/projects/?category=documentation';collectionBack.textContent='← 공부 기록';document.querySelector('.collection-main').prepend(collectionBack);
 
 const listURL=()=>articleListURL(location.href);

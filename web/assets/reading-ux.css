@@ -119,3 +119,7 @@ html,body,input,select,textarea,button,.logo-svg text{font-family:var(--font-ui)
 body[data-page=home] .fallback-scene,body.gpu-fallback[data-page=home] .fallback-scene{background-image:url('./home-poster-desktop.jpg');background-size:cover;background-position:center}
 @media(max-width:650px){body[data-page=home] .fallback-scene,body.gpu-fallback[data-page=home] .fallback-scene{background-image:url('./home-poster-mobile.jpg')}}
 body[data-page=world][data-world=categories]:not(.gpu-ready):not(.gpu-fallback) .world-hotspots{visibility:hidden}
+
+/* Reading surfaces transition independently of hidden spatial scenes. */
+body.route-transition #main{transition:opacity .16s ease}body.route-fade-out #main{opacity:0}
+@media(prefers-reduced-motion:reduce){body.route-transition #main{transition:none}}

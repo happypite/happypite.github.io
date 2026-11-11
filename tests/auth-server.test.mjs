@@ -23,7 +23,7 @@ function harness(t){
  return {handler,request,login,start,env,db,sqlite,calls,fetcher,advance:ms=>time+=ms,get refreshes(){return refreshes;},now:()=>time};
 }
 test('server rejects unconfigured deployments without exposing configuration secrets',async()=>{const r=await createHandler()(new Request(ORIGIN+'/api/session'),{});assert.equal(r.status,503);assert.ok(!(await r.text()).includes('client_secret'));});
-test('owner login creates a server-side encrypted session which survives a fresh page/server handler',async t=>{const h=harness(t),{r,cookie}=await h.login();assert.equal(r.status,303);assert.equal(r.headers.get('Location'),'/projects/');const raw=r.headers.getSetCookie().join(';');assert.ok(raw.includes('HttpOnly'));assert.ok(!raw.includes('owner-token'));assert.ok(!raw.includes('refresh-test-token'));const stored=JSON.stringify(h.sqlite.prepare('SELECT * FROM auth_state').all());assert.ok(!stored.includes('owner-token'));assert.ok(!stored.includes('refresh-test-token'));const fresh=createHandler({fetcher:h.fetcher,now:h.now});const restored=await fresh(new Request(ORIGIN+'/api/session',{headers:{Cookie:cookie}}),h.env);assert.deepEqual(await restored.json(),{authenticated:true,login:'happypite',expiresAt:h.now()+604800000});});
+test('owner login creates a server-side encrypted session which survives a fresh page/server handler',async t=>{const h=harness(t),{r,cookie}=await h.login();assert.equal(r.status,303);assert.equal(r.headers.get('Location'),'/');const raw=r.headers.getSetCookie().join(';');assert.ok(raw.includes('HttpOnly'));assert.ok(!raw.includes('owner-token'));assert.ok(!raw.includes('refresh-test-token'));const stored=JSON.stringify(h.sqlite.prepare('SELECT * FROM auth_state').all());assert.ok(!stored.includes('owner-token'));assert.ok(!stored.includes('refresh-test-token'));const fresh=createHandler({fetcher:h.fetcher,now:h.now});const restored=await fresh(new Request(ORIGIN+'/api/session',{headers:{Cookie:cookie}}),h.env);assert.deepEqual(await restored.json(),{authenticated:true,login:'happypite',expiresAt:h.now()+604800000});});
 test('a different GitHub user never receives a session',async t=>{const h=harness(t),result=await h.login('intruder-code');assert.equal(result.r.status,403);assert.equal(result.cookie,'');assert.equal((await h.request('/api/session')).status,200);assert.equal((await (await h.request('/api/session')).json()).authenticated,false);});
 test('OAuth state mismatch and callback replay fail closed',async t=>{const h=harness(t),{r,flow}=await h.login();assert.equal(r.status,303);assert.equal((await h.request('/auth/callback?state='+flow.state+'&code=owner-code',{cookie:flow.cookie})).status,400);const next=await h.start();assert.equal((await h.request('/auth/callback?state='+next.state+'&code=owner-code',{cookie:'__Host-happypite_oauth='+'x'.repeat(43)})).status,400);});
 test('anonymous requests, forged user IDs and cross-origin writes cannot authorize changes',async t=>{const h=harness(t),payload={path:ROOT+'/contents/content/posts/test.md',method:'PUT',body:{message:'note',branch:'main',content:'YQ=='}};const anon=await h.request('/api/github',{method:'POST',body:{...payload,ownerId:OWNER_ID}});assert.equal(anon.status,401);const {cookie}=await h.login();assert.equal((await h.request('/api/github',{method:'POST',cookie,body:payload,origin:'https://evil.example'})).status,403);assert.equal((await h.request('/api/github',{method:'POST',cookie,body:{...payload,path:'/repos/other/repo/contents/content/posts/test.md'}})).status,403);assert.equal((await h.request('/api/github',{method:'POST',cookie,body:payload})).status,200);});
@@ -43,4 +43,18 @@ test('provider redirects are blocked without forwarding credentials or creating 
  assert.equal(r.status,403);assert.ok(!r.headers.getSetCookie().some(c=>c.startsWith('__Host-happypite_session=')));
  assert.equal(calls.length,1);assert.equal(calls[0].url,'https://github.com/login/oauth/access_token');assert.equal(calls[0].options.redirect,'manual');
  assert.equal(h.sqlite.prepare("SELECT count(*) AS n FROM auth_state WHERE key LIKE 'session:%'").get().n,0);
+});
+
+
+test('authenticated login and admin entry land on home without starting another OAuth flow',async t=>{
+ const h=harness(t),{cookie}=await h.login(),before=h.calls.length;
+ const login=await h.request('/auth/login',{cookie});assert.equal(login.status,303);assert.equal(login.headers.get('Location'),'/');assert.equal(h.calls.length,before);
+ const admin=await h.request('/admin/',{cookie});assert.equal(admin.status,200);assert.equal(new URL(h.calls.at(-1).url).pathname,'/');
+});
+
+test('standalone reading is protected and preserves the article and collection query on the upstream page',async t=>{
+ const h=harness(t),path='/read/?note=gh-example&category=research&collection=notes';
+ const anonymous=await h.request(path);assert.equal(anonymous.status,303);assert.equal(anonymous.headers.get('Location'),'/auth/login');assert.equal(h.calls.length,0);
+ const {cookie}=await h.login(),response=await h.request(path,{cookie});assert.equal(response.status,200);
+ const upstream=new URL(h.calls.at(-1).url);assert.equal(upstream.origin,'https://happypite.github.io');assert.equal(upstream.pathname,'/read/');assert.equal(upstream.searchParams.get('note'),'gh-example');assert.equal(upstream.searchParams.get('category'),'research');assert.equal(upstream.searchParams.get('collection'),'notes');assert.equal(h.calls.at(-1).options.headers.Cookie,undefined);
 });
