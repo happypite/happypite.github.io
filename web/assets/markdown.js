@@ -6,7 +6,7 @@ const inline=text=>String(text).split(/(`[^`\n]+`)/g).map(part=>part.startsWith(
 
 // Parse lines so ordinary Markdown does not depend on blank lines after a
 // heading. Code is escaped directly instead of using forgeable placeholders.
-export function markdown(source){
+export function markdown(source,{minHeadingLevel=2,headingPrefix='note-heading-'}={}){
  const lines=String(source||'').replace(/\r\n?/g,'\n').split('\n'),out=[],paragraph=[];let heading=0;
  const flush=()=>{if(paragraph.length){out.push('<p>'+paragraph.map(inline).join('<br>')+'</p>');paragraph.length=0;}};
  for(let i=0;i<lines.length;i++){
@@ -16,7 +16,7 @@ export function markdown(source){
   const cells=row=>row.trim().replace(/^\|/,'').replace(/\|$/,'').split(/(?<!\\)\|/).map(c=>c.trim().replaceAll('\\|','|'));
   if(line.includes('|')&&i+1<lines.length){const head=cells(line),separator=cells(lines[i+1]);if(head.length>=2&&head.length<=24&&separator.length===head.length&&separator.every(c=>/^:?-{3,}:?$/.test(c))){flush();const align=separator.map(c=>c.startsWith(':')&&c.endsWith(':')?'center':c.endsWith(':')?'right':'left'),cell=(value,j,tag)=>'<'+tag+' style="text-align:'+align[j]+'">'+inline(value||'')+'</'+tag+'>';let table='<div class="markdown-table" tabindex="0" role="region" aria-label="표. 가로로 스크롤할 수 있습니다."><table><thead><tr>'+head.map((v,j)=>cell(v,j,'th')).join('')+'</tr></thead><tbody>';i+=2;while(i<lines.length&&lines[i].trim()&&lines[i].includes('|')){const row=cells(lines[i]);table+='<tr>'+head.map((_,j)=>cell(row[j],j,'td')).join('')+'</tr>';i++;}i--;out.push(table+'</tbody></table></div>');continue;}}
   if(!line.trim()){flush();continue;}
-  if(title){flush();const level=Math.min(6,Math.max(2,title[1].length));out.push('<h'+level+' id="note-heading-'+(++heading)+'">'+inline(title[2].replace(/\s+#+$/,''))+'</h'+level+'>');continue;}
+  if(title){flush();const level=Math.min(6,Math.max(minHeadingLevel,title[1].length));out.push('<h'+level+' id="'+escapeHTML(headingPrefix)+(++heading)+'">'+inline(title[2].replace(/\s+#+$/,''))+'</h'+level+'>');continue;}
   if(/^ {0,3}([-*+]\s+|\d+[.)]\s+)/.test(line)){flush();const ordered=/^ {0,3}\d/.test(line),items=[],pattern=ordered?/^ {0,3}\d+[.)]\s+/:/^ {0,3}[-*+]\s+/;while(i<lines.length&&pattern.test(lines[i])){items.push('<li>'+inline(lines[i].replace(pattern,''))+'</li>');i++;}i--;out.push((ordered?'<ol>':'<ul>')+items.join('')+(ordered?'</ol>':'</ul>'));continue;}
   if(/^ {0,3}>\s?/.test(line)){flush();const quote=[];while(i<lines.length&&/^ {0,3}>\s?/.test(lines[i]))quote.push(inline(lines[i++].replace(/^ {0,3}>\s?/,'')));i--;out.push('<blockquote>'+quote.join('<br>')+'</blockquote>');continue;}
   if(/^\s*(?:-{3,}|\*{3,}|_{3,})\s*$/.test(line)){flush();out.push('<hr>');continue;}
