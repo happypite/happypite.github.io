@@ -65,7 +65,7 @@ export function buildPages(projectRoot=process.cwd()){
  if(fs.existsSync(output)){if(fs.lstatSync(output).isSymbolicLink()||fs.realpathSync(output)!==output||!output.startsWith(root+path.sep+'out'+path.sep))throw Error('안전하지 않은 빌드 경로입니다.');fs.rmSync(output,{recursive:true});}
  fs.mkdirSync(output,{recursive:true});
  const frontend=fs.existsSync(path.join(root,'web/index.html'))?path.join(root,'web'):path.join(root,'dist');
- for(const name of ['index.html','assets','projects','world','about','portfolio','.nojekyll']){const source=path.join(frontend,name);if(!fs.existsSync(source))throw Error('프런트엔드 파일을 찾을 수 없습니다: '+name);fs.cpSync(source,path.join(output,name),{recursive:true,dereference:false});}
+ for(const name of ['index.html','assets','projects','world','about','portfolio','read','.nojekyll']){const source=path.join(frontend,name);if(!fs.existsSync(source))throw Error('프런트엔드 파일을 찾을 수 없습니다: '+name);fs.cpSync(source,path.join(output,name),{recursive:true,dereference:false});}
  const posts=[];walk(path.join(root,config.contentPath),file=>{if(!file.endsWith('.md')||path.basename(file).startsWith('_'))return;const sourcePath=path.relative(root,file).replaceAll('\\','/'),post=parsePost(fs.readFileSync(file,'utf8'),sourcePath);if(post)posts.push(post);});
  posts.sort((a,b)=>b.date.localeCompare(a.date)||a.title.localeCompare(b.title,'ko'));
  const runtime={mode:'github-pages',repository:config.repository,branch:config.branch,contentPath:config.contentPath,siteUrl:config.siteUrl};
