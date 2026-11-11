@@ -61,6 +61,9 @@ async function browseCatalog(category='all',focus=false){interruptTravel();if(bu
 const managementRequested=new URL(location.href).searchParams.get('manage')==='1';
 function updateAuthorPanel(){$('#author-panel').hidden=!managementRequested&&!store.canManage;}
 $('#author-tools-toggle').addEventListener('click',mountOwnerLogin(store));
+const adminEntry=document.createElement('a');adminEntry.className='site-admin-entry';adminEntry.href=AUTH_SERVER_URL?AUTH_SERVER_URL+'/auth/login':'/projects/?manage=1';adminEntry.setAttribute('aria-label','관리자 로그인');adminEntry.title='관리자 로그인';adminEntry.innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><circle cx="12" cy="8" r="3.5"/><path d="M5 21v-2a7 7 0 0 1 14 0v2"/></svg><span>관리자 로그인</span>';$('.site-header').append(adminEntry);
+function syncAdminEntry(){const active=store.canManage;adminEntry.href=active?'/projects/?manage=1':AUTH_SERVER_URL?AUTH_SERVER_URL+'/auth/login':'/projects/?manage=1';adminEntry.setAttribute('aria-label',active?'글 관리':'관리자 로그인');adminEntry.title=active?'글 관리':'관리자 로그인';adminEntry.querySelector('span').textContent=active?'글 관리':'관리자 로그인';}
+store.listeners.push(syncAdminEntry);syncAdminEntry();
 document.querySelectorAll('[data-quick-search] kbd').forEach(k=>k.textContent=/Mac|iPhone|iPad/.test(navigator.platform||'')?'⌘ K':'Ctrl K');
 document.querySelectorAll('[data-quick-search]').forEach(b=>b.addEventListener('click',()=>browseCatalog('all',true)));
 document.querySelectorAll('[data-quick-write]').forEach(b=>b.addEventListener('click',async()=>{if(await openTopic('all'))notes.editor();}));
