@@ -2,7 +2,7 @@ import {renderPixelRatio} from './render-quality.js';
 import {worldViewport} from './world-layout.js';
 import {ArticleGlobe} from './globe.js';
 import {Pavilion} from './pavilion.js';
-import {Gallery} from './gallery.js';
+import {embedSymbolImages} from './bug-reference.js';
 import {PointerFlow} from './flow.js';
 import * as THREE from './vendor/three.module.js';
 import {topics,symbolSVG} from './symbols.js';
@@ -12,7 +12,7 @@ export class Observatory {
   constructor(canvas){
     this.canvas=canvas;this.detail=document.getElementById('detail');this.w=innerWidth;this.h=innerHeight;this.page='home';this.motion=false;this.time=0;this.last=0;this.transition=null;this.pointer=new THREE.Vector2();this.mouse=new THREE.Vector2();this.trail=Array.from({length:8},()=>new THREE.Vector4(-2,-2,1,0));this.trailIndex=0;this.lastTrail=0;this.lastPointer=new THREE.Vector2();this.rotation=new THREE.Vector2(.06,0);this.targetRotation=new THREE.Vector2(.06,0);this.spin=new THREE.Vector2();this.tiles=[];this.velocity=0;this.hover=-1;this.pointerEnergy=0;this.smoothEnergy=0;this.flowPoint=new THREE.Vector2(.5,.5);this.flowPrevious=new THREE.Vector2(.5,.5);
     this.renderer=new THREE.WebGLRenderer({canvas,antialias:true,powerPreference:'high-performance'});this.renderer.setPixelRatio(renderPixelRatio(this.w,this.h,devicePixelRatio));this.renderer.setSize(this.w,this.h);this.renderer.outputColorSpace=THREE.SRGBColorSpace;this.renderer.toneMapping=THREE.ACESFilmicToneMapping;this.renderer.toneMappingExposure=1.1;
-    this.flow=new PointerFlow(this.renderer);this.env=this.environment();this.camera=new THREE.PerspectiveCamera(44,this.w/this.h,.1,100);this.worldCamera=new THREE.PerspectiveCamera(49,this.w/this.h,.1,100);this.worldCamera.position.z=14;
+    this.flow=new PointerFlow(this.renderer);this.camera=new THREE.PerspectiveCamera(44,this.w/this.h,.1,100);this.worldCamera=new THREE.PerspectiveCamera(49,this.w/this.h,.1,100);this.worldCamera.position.z=14;
     this.home=this.homeScene();this.archive=this.archiveScene();this.world=this.worldScene();
     this.rtA=new THREE.WebGLRenderTarget(1,1,{samples:4});this.rtB=new THREE.WebGLRenderTarget(1,1);
     this.postCamera=new THREE.OrthographicCamera(-1,1,1,-1,0,2);this.postCamera.position.z=1;this.postScene=new THREE.Scene();
@@ -31,8 +31,6 @@ export class Observatory {
     this.postScene.add(new THREE.Mesh(new THREE.PlaneGeometry(2,2),this.post));
     this.resize=this.resize.bind(this);this.frame=this.frame.bind(this);window.addEventListener('resize',this.resize);document.addEventListener('pointermove',e=>this.onPointer(e),{passive:true});canvas.addEventListener('webglcontextlost',e=>{e.preventDefault();this.contextLost=true;this.sceneReady=false;document.body.classList.remove('gpu-ready','scene-ready');document.body.classList.add('gpu-fallback');});canvas.addEventListener('webglcontextrestored',()=>{this.contextLost=false;this.last=0;this.resize();this.bindTiles();if(this.gallery){document.body.classList.remove('gpu-fallback');document.body.classList.add('gpu-ready');}});this.resize();requestAnimationFrame(this.frame);
   }
-  environment(){const c=document.createElement('canvas');c.width=1024;c.height=512;const x=c.getContext('2d'),g=x.createLinearGradient(0,0,0,512);g.addColorStop(0,'#122732');g.addColorStop(.5,'#8ba99e');g.addColorStop(1,'#07111b');x.fillStyle=g;x.fillRect(0,0,1024,512);x.fillStyle='#d7efe0';x.fillRect(180,60,90,240);x.fillStyle='#62bcbf';x.fillRect(650,80,170,140);const t=new THREE.CanvasTexture(c);t.mapping=THREE.EquirectangularReflectionMapping;t.colorSpace=THREE.SRGBColorSpace;const pm=new THREE.PMREMGenerator(this.renderer),env=pm.fromEquirectangular(t).texture;t.dispose();pm.dispose();return env;}
-  metal(color='#9ebdb3',rough=.18){return new THREE.MeshStandardMaterial({color,metalness:.85,roughness:rough,envMap:this.env});}
   homeScene(){this.pavilion=new Pavilion(this.renderer);return this.pavilion.scene;}
   archiveScene(){
     const scene=new THREE.Scene();scene.background=new THREE.Color('#ececeb');scene.fog=new THREE.Fog('#ececeb',12,42);
@@ -47,7 +45,19 @@ export class Observatory {
   worldScene(){this.orbit=new ArticleGlobe();return this.orbit.scene;}
   setWorldRoot(){if(!this.textures)return;this.orbit.setRoot(this.textures,topics);this.targetRotation.set(.06,0);this.rotation.copy(this.targetRotation);this.spin.set(0,0);}
   setWorldPosts(topic,posts){this.orbit.setTopic(topic,posts);this.targetRotation.set(.05,0);this.rotation.copy(this.targetRotation);this.spin.set(0,0);}
-  async loadTextures(){await Promise.all([document.fonts.load('400 20px "Gowun Batang"'),document.fonts.load('700 20px "Gowun Batang"'),document.fonts.load('400 16px "Pretendard Variable"')]);this.textures=await Promise.all(topics.map((topic,i)=>new Promise((resolve,reject)=>{const svg=symbolSVG(topic,'gpu').replace('<svg ','<svg width="560" height="320" ').replace(/ aria-hidden="true"/g,'');const url=URL.createObjectURL(new Blob([svg],{type:'image/svg+xml'}));const img=new Image();img.onload=()=>{try{const c=document.createElement('canvas');c.width=1120;c.height=640;const ctx=c.getContext('2d');ctx.drawImage(img,0,0,1120,640);const texture=new THREE.CanvasTexture(c);texture.colorSpace=THREE.SRGBColorSpace;texture.minFilter=THREE.LinearFilter;texture.generateMipmaps=false;URL.revokeObjectURL(url);resolve(texture);}catch(e){reject(e);}};img.onerror=reject;img.src=url;})));this.orbit.setRoot(this.textures,topics);await document.fonts.ready;this.gallery=new Gallery(this.renderer,this.textures,this.flow);document.body.classList.add('gpu-ready');this.bindTiles();}
+  loadTextures(){return this.texturePromise??=this.createTextures();}
+  async createTextures(){
+    this.textures=await Promise.all(topics.map(async topic=>{
+      const source=await embedSymbolImages(symbolSVG(topic,'gpu'));
+      return new Promise((resolve,reject)=>{
+        const svg=source.replace('<svg ','<svg width="560" height="320" ').replace(/ aria-hidden="true"/g,'');
+        const url=URL.createObjectURL(new Blob([svg],{type:'image/svg+xml'})),img=new Image();
+        img.onload=()=>{try{const canvas=document.createElement('canvas');canvas.width=1120;canvas.height=640;canvas.getContext('2d').drawImage(img,0,0,1120,640);const texture=new THREE.CanvasTexture(canvas);texture.colorSpace=THREE.SRGBColorSpace;texture.minFilter=THREE.LinearFilter;texture.generateMipmaps=false;URL.revokeObjectURL(url);resolve(texture);}catch(error){URL.revokeObjectURL(url);reject(error);}};
+        img.onerror=()=>{URL.revokeObjectURL(url);reject(Error('Category artwork could not be decoded'));};img.src=url;
+      });
+    }));
+    this.orbit.setRoot(this.textures,topics);document.body.classList.add('gpu-ready');
+  }
   resume(){this.last=0;this.pointerEnergy=0;this.smoothEnergy=0;this.flow.started=false;}
   bindTiles(){this.gallery?.bind();}
   onPointer(e){const x=e.clientX/this.w,y=e.clientY/this.h;this.pointerEnergy=Math.min(1,Math.hypot(x-this.lastPointer.x,y-this.lastPointer.y)*16);this.pointer.set(x-.5,y-.5);this.lastPointer.set(x,y);}
