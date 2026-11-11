@@ -1,4 +1,4 @@
-import {scrapMetadata} from './scrap-model.js';
+import {scrapMetadata,isScrapbook} from './scrap-model.js';
 import {rememberReading,savedPosition} from './reading-history.js';
 import {escapeHTML} from './markdown.js';
 
@@ -12,7 +12,7 @@ export function searchExcerpt(post,query,limit=150){
 }
 export function relatedPosts(posts,current,limit=3){
  const tags=new Set(current.tags||[]),score=p=>(p.category===current.category?4:0)+(p.tags||[]).filter(t=>tags.has(t)).length;
- return posts.filter(p=>p.id!==current.id&&p.status==='published'&&!p.deletedAt&&score(p)>0).sort((a,b)=>score(b)-score(a)||String(b.date||'').localeCompare(String(a.date||''))).slice(0,limit);
+ return posts.filter(p=>!isScrapbook(p)&&p.id!==current.id&&p.status==='published'&&!p.deletedAt&&score(p)>0).sort((a,b)=>score(b)-score(a)||String(b.date||'').localeCompare(String(a.date||''))).slice(0,limit);
 }
 export function noteURL(origin,id){const url=new URL('/projects/',origin);url.searchParams.set('note',String(id));return url.href;}
 export function postMarkdown(post){

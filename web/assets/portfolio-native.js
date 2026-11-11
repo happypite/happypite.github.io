@@ -1,7 +1,8 @@
+import {isScrapbook} from './scrap-model.js';
 import {escapeHTML as esc} from './markdown.js';
 
 export const cleanPortfolioTag=value=>typeof value==='string'?value.normalize('NFC').trim().replace(/^[#＃]+\s*/u,'').trim():'';
-export function portfolioPosts(posts,topics){return (Array.isArray(posts)?posts:[]).filter(p=>p?.status==='published'&&!p.deletedAt&&!p.draft&&typeof p.id==='string'&&typeof p.title==='string'&&topics.some(t=>t.id===p.category));}
+export function portfolioPosts(posts,topics){return (Array.isArray(posts)?posts:[]).filter(p=>!isScrapbook(p)&&p?.status==='published'&&!p.deletedAt&&!p.draft&&typeof p.id==='string'&&typeof p.title==='string'&&topics.some(t=>t.id===p.category));}
 export function portfolioTags(posts){return [...new Set(posts.flatMap(p=>(Array.isArray(p.tags)?p.tags:[]).map(cleanPortfolioTag).filter(Boolean)))];}
 export function selectPortfolioPosts(posts,{tag='',category='',order='newest'}={}){return posts.filter(p=>(!category||p.category===category)&&(!tag||(p.tags||[]).map(cleanPortfolioTag).includes(tag))).sort((a,b)=>order==='title'?a.title.localeCompare(b.title,'ko'):order==='oldest'?(a.date||'').localeCompare(b.date||''):(b.date||'').localeCompare(a.date||''));}
 export function portfolioReadingSection(sections,line,atEnd=false){if(!sections.length)return null;if(atEnd)return sections.at(-1).id;return sections.filter(section=>section.top<=line).at(-1)?.id||sections[0].id;}

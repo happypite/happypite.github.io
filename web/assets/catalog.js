@@ -1,3 +1,4 @@
+import {isScrapbook} from './scrap-model.js';
 import {escapeHTML} from './markdown.js';
 import {searchExcerpt} from './reading.js';
 
@@ -8,7 +9,7 @@ export function catalogState(address){
 }
 export function catalogPosts(posts,state){
  const query=state.query.trim().toLocaleLowerCase();
- return posts.filter(p=>p.status==='published'&&!p.deletedAt&&!p.draft&&categories.includes(p.category)&&(state.category==='all'||p.category===state.category)&&(!query||[p.title,p.summary,p.body,...p.tags||[]].join(' ').toLocaleLowerCase().includes(query))).sort((a,b)=>state.sort==='title'?a.title.localeCompare(b.title,'ko'):String(state.sort==='newest'?b.date:b.updatedAt||b.date).localeCompare(String(state.sort==='newest'?a.date:a.updatedAt||a.date))||a.title.localeCompare(b.title,'ko'));
+ return posts.filter(p=>!isScrapbook(p)&&p.status==='published'&&!p.deletedAt&&!p.draft&&categories.includes(p.category)&&(state.category==='all'||p.category===state.category)&&(!query||[p.title,p.summary,p.body,...p.tags||[]].join(' ').toLocaleLowerCase().includes(query))).sort((a,b)=>state.sort==='title'?a.title.localeCompare(b.title,'ko'):String(state.sort==='newest'?b.date:b.updatedAt||b.date).localeCompare(String(state.sort==='newest'?a.date:a.updatedAt||a.date))||a.title.localeCompare(b.title,'ko'));
 }
 export function catalogURL(address,state,note){
  const url=new URL(address,'https://happypite.github.io');url.pathname='/projects/';url.hash='';url.searchParams.delete('note');
@@ -32,6 +33,6 @@ export class ReadingCatalog{
  setCategory(category){this.state.category=categories.includes(category)?category:'all';this.updateURL();this.render();}
  focusSearch(){this.search.focus();this.search.select();}
  renderFilters(){document.querySelector('#filters').innerHTML=[{id:'all',name:'전체'},...this.topics].map(t=>'<button data-filter="'+t.id+'" aria-pressed="'+(this.state.category===t.id)+'">'+escapeHTML(t.name)+'</button>').join('');}
- renderResults(){const posts=catalogPosts(this.store.posts,this.state),filtered=this.state.category!=='all'||this.state.query.trim();this.root.classList.toggle('catalog-is-empty',posts.length===0);document.querySelector('#record-count').textContent=posts.length+'편';document.querySelector('[data-catalog-clear]').hidden=!filtered;this.results.innerHTML=(this.state.category==='documentation'?'<button class="scrap-catalog-link" data-open-scrapbook><span><strong>보안 이슈 스크랩</strong><small>월별·날짜별 기록</small></span><span aria-hidden="true">→</span></button>':'')+(posts.length?catalogRows(posts,this.topics,this.state,this.address()):'<div class="catalog-empty"><h2>'+(filtered?'조건에 맞는 글이 없습니다.':'공부 기록을 준비하고 있습니다.')+'</h2><p>'+(filtered?'검색어를 바꾸거나 전체 카테고리에서 찾아보세요.':'개념 정리와 실습 기록을 차근차근 모아두겠습니다.')+'</p></div>');}
+ renderResults(){const posts=catalogPosts(this.store.posts,this.state),filtered=this.state.category!=='all'||this.state.query.trim();this.root.classList.toggle('catalog-is-empty',posts.length===0);document.querySelector('#record-count').textContent=(this.state.category==='documentation'?'일반 글 ':'')+posts.length+'편';document.querySelector('[data-catalog-clear]').hidden=!filtered;this.results.innerHTML=(this.state.category==='documentation'?'<button class="scrap-catalog-link" data-open-scrapbook><span><strong>보안 이슈 스크랩</strong><small>월별·날짜별 기록</small></span><span aria-hidden="true">→</span></button>':'')+(posts.length?catalogRows(posts,this.topics,this.state,this.address()):this.state.category==='documentation'&&!this.state.query.trim()?'':'<div class="catalog-empty"><h2>'+(filtered?'조건에 맞는 글이 없습니다.':'공부 기록을 준비하고 있습니다.')+'</h2><p>'+(filtered?'검색어를 바꾸거나 전체 카테고리에서 찾아보세요.':'개념 정리와 실습 기록을 차근차근 모아두겠습니다.')+'</p></div>');}
  render(){this.search.value=this.state.query;this.sort.value=this.state.sort;this.renderFilters();this.renderResults();}
 }
