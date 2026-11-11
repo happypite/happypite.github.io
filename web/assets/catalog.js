@@ -1,3 +1,4 @@
+import {mountSortMenu} from './sort-menu.js';
 import {articleURL} from './article-links.js';
 import {isScrapbook} from './scrap-model.js';
 import {escapeHTML} from './markdown.js';
@@ -36,6 +37,7 @@ export class ReadingCatalog{
   this.store=store;this.topics=topics;this.onOpen=onOpen;this.state=catalogState(location.href);this.root=document.querySelector('#projects');this.search=document.querySelector('#catalog-search');this.sort=document.querySelector('#catalog-sort');this.results=document.querySelector('#records-grid');this.status=document.querySelector('#catalog-status');
   this.search.addEventListener('input',()=>{this.state.query=this.search.value;this.updateURL();this.renderResults();});
   this.sort.addEventListener('change',()=>{this.state.sort=this.sort.value;this.updateURL();this.renderResults();});
+  this.sortMenu=mountSortMenu(this.sort);
   this.store.statusListeners?.push(()=>this.renderResults());
   this.root.addEventListener('click',async e=>{
    const link=e.target.closest('[data-catalog-read]');
@@ -68,5 +70,5 @@ export class ReadingCatalog{
   const html=collection+(posts.length?catalogRows(posts,this.topics,this.state,this.address()):collection&&!this.state.query.trim()&&!['loading','error'].includes(empty.kind)?'':'<div class="catalog-empty" data-state="'+empty.kind+'"><h2>'+empty.title+'</h2><p>'+empty.detail+'</p>'+(empty.kind==='error'?'<button data-catalog-retry>다시 시도</button>':'')+'</div>');
   if(this.results.innerHTML!==html){const focused=document.activeElement?.closest?.('[data-catalog-read]')?.dataset.catalogRead;this.results.innerHTML=html;if(focused)this.results.querySelector('[data-catalog-read="'+CSS.escape(focused)+'"]')?.focus({preventScroll:true});}
  }
- render(){this.search.value=this.state.query;this.sort.value=this.state.sort;this.renderFilters();this.renderResults();}
+ render(){this.search.value=this.state.query;this.sort.value=this.state.sort;this.sortMenu?.sync();this.renderFilters();this.renderResults();}
 }
