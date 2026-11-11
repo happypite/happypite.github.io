@@ -15,19 +15,24 @@ from fontTools.ttLib import TTFont
 fonts = root / 'web/assets/fonts'
 home = (root / 'web/index.html').read_text(encoding='utf-8')
 display_text = re.search(r'<section id="home".*?</section>', home, re.S).group()
-display_text += '공부 기록 공간 탐색 포트폴리오 회고와 보완 계획 나에 대하여 모든 노트'
+display_text += '이성민 공부 기록 공간 탐색 포트폴리오 회고와 보완 계획 나에 대하여 모든 노트'
 ui_text = ''.join(p.read_text(encoding='utf-8') for p in (root / 'web').rglob('*')
                   if p.suffix in ('.html', '.js') and 'vendor' not in p.parts)
 ascii_points = set(range(0x20, 0x7f))
 def characters(text):
     return ascii_points | {ord(c) for c in text if 0xAC00 <= ord(c) <= 0xD7A3 or c in '·←→↗×⌕＋–…'}
 
-faces = [('GowunBatang-Regular', 'Gowun Batang', '400', characters(display_text)),
-         ('GowunBatang-Bold', 'Gowun Batang', '700', characters(display_text)),
+faces = [('AritaBuriKR-Medium', 'Arita Buri', '500', characters(display_text)),
+         ('AritaBuriKR-SemiBold', 'Arita Buri', '600', characters(display_text)),
          ('PretendardVariable', 'Pretendard Variable', '45 920', characters(ui_text))]
 rules, manifest = [], []
 for stem, family, weight, requested in faces:
-    font = TTFont(fonts / (stem + '.woff2'))
+    original = root / '.local/arita/Arita Buri KR' / (stem + '.ttf')
+    source = original if stem.startswith('Arita') and original.exists() else fonts / (stem + '.woff2')
+    font = TTFont(source)
+    if stem.startswith('Arita'):
+        for table in ['GPOS','GSUB','kern']:
+            if table in font: del font[table]
     points = requested & set(font.getBestCmap())
     options = subset.Options()
     options.flavor = 'woff2'
@@ -36,6 +41,7 @@ for stem, family, weight, requested in faces:
     worker.subset(font)
     temporary = root / '.local' / (stem + '-critical.woff2')
     temporary.parent.mkdir(exist_ok=True)
+    font.flavor = "woff2"
     font.save(temporary)
     data = temporary.read_bytes()
     digest = hashlib.sha256(data).hexdigest()[:10]

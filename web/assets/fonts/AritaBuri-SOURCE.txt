@@ -1,0 +1,4 @@
+Arita Buri KR — Copyright (c) AmorePacific & AhnSangSoo-HanJaeJoon-RyuYangHee. All rights reserved.
+Official freely distributed font: https://www.apgroup.com/int/ko/about-us/visual-identity/arita-typeface/arita-typeface.html
+Source: https://www.apgroup.com/int/ko/resource/attach/dam/about-us/visual-identity/Arita_Buri_KR.zip
+Medium and SemiBold TTF converted to WOFF2; critical subsets contain first-screen characters.
