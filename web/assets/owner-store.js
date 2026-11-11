@@ -63,10 +63,15 @@ export class OwnerStore{
  }
  async remove(id){const path=this.paths.get(id),sha=this.shas.get(id);if(!path||!sha)throw Error('최신 글을 다시 불러오세요.');await this.api(this.endpoint(path),{method:'DELETE',body:JSON.stringify({message:'Delete study note',sha,branch:this.config.branch||'main'})});return this.load();}
 }
+export function mountOwnerStatus(store){
+ const badge=document.createElement('span');badge.className='owner-session-status';badge.hidden=true;badge.setAttribute('role','status');badge.setAttribute('aria-label','관리자로 로그인됨');badge.title='관리자로 로그인됨';badge.tabIndex=0;
+ badge.innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3 4.5 6v5.5c0 4.3 3.1 7.6 7.5 9.5 4.4-1.9 7.5-5.2 7.5-9.5V6Z"/><path d="m8.5 12 2.3 2.3 4.7-4.8"/></svg><span class="owner-session-label">관리자로 로그인됨</span>';
+ document.body.append(badge);const sync=()=>{badge.hidden=!store.owner.authenticated;};store.listeners.push(sync);sync();return badge;
+}
 export function mountOwnerLogin(store){
+ mountOwnerStatus(store);
  const connected=posts=>{store.posts=posts;store.fallback=posts.map(p=>({...p}));store.publicExpected=posts.map(p=>({id:p.id,contentVersion:p.contentVersion}));store.authorTools=true;store.canWrite=true;store.listeners.forEach(fn=>fn(posts));};
  if(store.owner.serverMode){
-  const status=document.querySelector('.header-note');if(status)status.textContent='관리자 모드 · GitHub 로그인';
   store.owner.restoreSession().then(async active=>{if(active)connected(await store.owner.load());}).catch(()=>{store.owner.logout();});
   return async event=>{if(!store.owner.authenticated){location.assign('/auth/login');return;}const button=event?.currentTarget;if(button){button.disabled=true;button.textContent='로그아웃 중…';}try{await store.owner.disconnect();store.authorTools=false;store.canWrite=false;store.listeners.forEach(fn=>fn(store.posts));location.assign(store.config.siteUrl||'https://happypite.github.io');}catch(e){if(button){button.textContent='로그아웃 다시 시도';const feedback=button.nextElementSibling;if(feedback){feedback.setAttribute('role','status');feedback.textContent=e.message;}}}finally{if(button)button.disabled=false;}};
  }

@@ -71,3 +71,5 @@ body[data-page=projects] .site-header{height:82px;backdrop-filter:none}
  #projects .catalog-empty,#projects.catalog-is-empty .catalog-empty{padding:28px 0 20px}
  #projects .catalog-empty h2,#projects.catalog-is-empty .catalog-empty h2{font-size:18px}
 }
+
+#projects .author-panel{padding:0;background:transparent;border:0;border-radius:0;justify-content:flex-end}
