@@ -34,9 +34,10 @@ button,a,input,textarea{font-family:inherit}
 .fluid-text{will-change:filter;overflow:visible}
 .scene-footer{bottom:25px;left:2.2%;right:2.2%}.footer-left{min-width:150px;font-size:9px}.footer-right{min-width:150px;font-size:8px}
 .world-title{background:linear-gradient(90deg,#070f18b8,transparent);top:16%;left:5%}.world-title h1{font-size:28px;font-weight:450;letter-spacing:-1px}.world-title p:not(.eyebrow){font-size:11px;line-height:1.85;max-width:275px}.world-title .eyebrow{font-size:8px;letter-spacing:1px}
-body[data-page=world] #world,body[data-page=world] .world-hotspot{cursor:url('./cursor-hand.svg') 17 13,grab}
-body[data-page=world].world-dragging #world,body[data-page=world].world-dragging .world-hotspot{cursor:url('./cursor-grab.svg') 18 24,grabbing}
-body[data-page=world] .cursor-ring{display:none}
+body[data-page=world] #world,body[data-page=world] .world-hotspot{cursor:grab}
+body[data-page=world].world-dragging #world,body[data-page=world].world-dragging .world-hotspot{cursor:grabbing}
+body[data-page=world]{cursor:default}
+body[data-page=world] #cursor-ring{display:none!important}
 .world-hotspot .world-label{font-size:11px;font-weight:500}.world-help{font-size:10px}
 .cursor-ring{border-width:.7px;opacity:.4;transition:opacity .4s}
 
