@@ -100,3 +100,8 @@ body[data-page=about] .scene-footer{display:none}
 .pf-rail nav button,.pf-record-meta,.pf-heading-note,.pf-result-count,.pf-selects label,.pf-selects select,.pf-tag-filter>span,.pf-category-directory>p{color:#6a7f5c}
 body[data-page=about] .cursor-ring{display:none}
 @media(max-width:700px){.pf-rail{position:sticky;top:0;z-index:3;background:rgba(241,245,237,.98);padding-top:11px}.pf-section{scroll-margin-top:83px}}
+.pf-rail nav button{position:relative;transition:color .15s,background-color .15s}
+.pf-rail nav button[aria-current=location]{color:#244e31;font-weight:700;background:#51783c0e;border-radius:3px}
+.pf-rail nav button[aria-current=location]>span{color:#355f30;font-weight:700}
+.pf-rail nav button[aria-current=location]:before{content:'';position:absolute;width:3px;height:19px;border-radius:2px;left:-12px;top:50%;transform:translateY(-50%);background:#3e6b35}
+@media(max-width:700px){.pf-rail nav button[aria-current=location]{background:transparent}.pf-rail nav button[aria-current=location]:before{left:0;right:0;width:auto;height:2px;top:auto;bottom:0;transform:none}}
