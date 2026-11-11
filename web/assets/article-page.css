@@ -19,3 +19,5 @@ body.article-view{height:100dvh;overflow:hidden;background:#f5f7f2;color:#29473b
 .article-view .resume-reading button{min-height:44px;font:500 14px/1.5 var(--font-ui);white-space:nowrap;padding:6px 4px;color:#315c40}
 .article-view .resume-reading button:focus-visible{outline:2px solid #315c40;outline-offset:2px}
 @media(max-width:700px){.article-view .resume-reading{padding:8px 12px;gap:0 16px;font-size:13px}.article-view .resume-reading>span{flex-basis:100%}.article-view .resume-reading button{font-size:13px}}
+
+.article-view .article-collection-back{display:none}.article-view #detail[data-notes-view=scraps] .article-collection-back{display:inline-flex;align-items:center;min-height:44px;margin-bottom:16px;color:#315c40;font-size:14px}

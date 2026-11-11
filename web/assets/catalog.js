@@ -1,4 +1,5 @@
 import {articleURL} from './article-links.js';
+import {isScrapbook} from './scrap-model.js';
 import {escapeHTML} from './markdown.js';
 import {searchExcerpt} from './reading.js';
 
@@ -9,7 +10,7 @@ export function catalogState(address){
 }
 export function catalogPosts(posts,state){
  const query=state.query.trim().toLocaleLowerCase();
- return posts.filter(p=>p.status==='published'&&!p.deletedAt&&!p.draft&&categories.includes(p.category)&&(state.category==='all'||p.category===state.category)&&(!query||[p.title,p.summary,p.body,...p.tags||[]].join(' ').toLocaleLowerCase().includes(query))).sort((a,b)=>state.sort==='title'?a.title.localeCompare(b.title,'ko'):String(state.sort==='newest'?b.date:b.updatedAt||b.date).localeCompare(String(state.sort==='newest'?a.date:a.updatedAt||a.date))||a.title.localeCompare(b.title,'ko'));
+ return posts.filter(p=>!isScrapbook(p)&&p.status==='published'&&!p.deletedAt&&!p.draft&&categories.includes(p.category)&&(state.category==='all'||p.category===state.category)&&(!query||[p.title,p.summary,p.body,...p.tags||[]].join(' ').toLocaleLowerCase().includes(query))).sort((a,b)=>state.sort==='title'?a.title.localeCompare(b.title,'ko'):String(state.sort==='newest'?b.date:b.updatedAt||b.date).localeCompare(String(state.sort==='newest'?a.date:a.updatedAt||a.date))||a.title.localeCompare(b.title,'ko'));
 }
 export function catalogURL(address,state,note){
  const url=new URL(address,'https://happypite.github.io');url.pathname='/projects/';url.hash='';url.searchParams.delete('note');
@@ -63,7 +64,8 @@ export class ReadingCatalog{
   const available=catalogPosts(this.store.posts,{category:'all',query:'',sort:'updated'}).length;
   this.status.hidden=!(available&&this.store.error);
   this.status.innerHTML=this.status.hidden?'':'<span>최신 목록을 확인하지 못해 저장된 글을 보여드립니다.</span><button data-catalog-retry'+(this.store.loading?' disabled':'')+'>'+(this.store.loading?'확인 중…':'다시 시도')+'</button>';
-  const html=posts.length?catalogRows(posts,this.topics,this.state,this.address()):'<div class="catalog-empty" data-state="'+empty.kind+'"><h2>'+empty.title+'</h2><p>'+empty.detail+'</p>'+(empty.kind==='error'?'<button data-catalog-retry>다시 시도</button>':'')+'</div>';
+  const collection=this.state.category==='documentation'?'<button class="scrap-catalog-link" data-open-scrapbook><span><strong>보안 이슈 스크랩</strong><small>월별·날짜별 기록</small></span><span aria-hidden="true">→</span></button>':'';
+  const html=collection+(posts.length?catalogRows(posts,this.topics,this.state,this.address()):collection&&!this.state.query.trim()&&!['loading','error'].includes(empty.kind)?'':'<div class="catalog-empty" data-state="'+empty.kind+'"><h2>'+empty.title+'</h2><p>'+empty.detail+'</p>'+(empty.kind==='error'?'<button data-catalog-retry>다시 시도</button>':'')+'</div>');
   if(this.results.innerHTML!==html){const focused=document.activeElement?.closest?.('[data-catalog-read]')?.dataset.catalogRead;this.results.innerHTML=html;if(focused)this.results.querySelector('[data-catalog-read="'+CSS.escape(focused)+'"]')?.focus({preventScroll:true});}
  }
  render(){this.search.value=this.state.query;this.sort.value=this.state.sort;this.renderFilters();this.renderResults();}

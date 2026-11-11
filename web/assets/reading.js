@@ -1,3 +1,4 @@
+import {scrapMetadata,isScrapbook} from './scrap-model.js';
 import {rememberReading,savedPosition} from './reading-history.js';
 import {escapeHTML} from './markdown.js';
 
@@ -11,11 +12,11 @@ export function searchExcerpt(post,query,limit=150){
 }
 export function relatedPosts(posts,current,limit=3){
  const tags=new Set(current.tags||[]),score=p=>(p.category===current.category?4:0)+(p.tags||[]).filter(t=>tags.has(t)).length;
- return posts.filter(p=>p.id!==current.id&&p.status==='published'&&!p.deletedAt&&score(p)>0).sort((a,b)=>score(b)-score(a)||String(b.date||'').localeCompare(String(a.date||''))).slice(0,limit);
+ return posts.filter(p=>!isScrapbook(p)&&p.id!==current.id&&p.status==='published'&&!p.deletedAt&&score(p)>0).sort((a,b)=>score(b)-score(a)||String(b.date||'').localeCompare(String(a.date||''))).slice(0,limit);
 }
 export function noteURL(origin,id){const url=new URL('/read/',origin);url.searchParams.set('note',String(id));return url.href;}
 export function postMarkdown(post){
- const data={title:post.title,category:post.category,date:post.date,summary:post.summary||'',tags:post.tags||[],status:post.status==='draft'?'draft':'published',fontSize:readingSize(post.fontSize),pinned:post.pinned===true,...(post.url?{url:post.url}:{})};
+ const data={...scrapMetadata(post),title:post.title,category:post.category,date:post.date,summary:post.summary||'',tags:post.tags||[],status:post.status==='draft'?'draft':'published',fontSize:readingSize(post.fontSize),pinned:post.pinned===true,...(post.url?{url:post.url}:{})};
  return '---\n'+Object.entries(data).map(([key,value])=>key+': '+JSON.stringify(value)).join('\n')+'\n---\n\n'+post.body+'\n';
 }
 
