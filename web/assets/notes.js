@@ -60,7 +60,7 @@ export class NotesUI{
   </div></div>
   <div id="reader-feedback">${message?'<p class="note-success" role="status">'+escapeHTML(message)+'</p>':''}</div>
   <article class="note-reader" aria-labelledby="reader-note-title"><header class="reader-heading"><p class="reader-category">${escapeHTML(this.topics.find(t=>t.id===p.category)?.name)}</p>
-  <h2 id="reader-note-title">${escapeHTML(p.title)}</h2><p class="reader-meta"><span>작성 <time datetime="${escapeHTML(p.date)}">${escapeHTML(p.date)}</time></span>${p.updatedAt&&p.updatedAt.slice(0,10)!==p.date?'<span>수정 '+escapeHTML(p.updatedAt.slice(0,10))+'</span>':''}<span>약 ${Math.max(1,Math.ceil(p.body.length/650))}분 읽기</span>${p.status==='draft'?'<span>임시 글</span>':''}${p.deletedAt?'<span>휴지통</span>':''}</p>
+  <h2 id="reader-note-title">${escapeHTML(p.title)}</h2><p class="reader-meta"><span>작성 <time datetime="${escapeHTML(p.date)}">${escapeHTML(p.date)}</time></span>${p.updatedAt&&p.updatedAt.slice(0,10)!==p.date?'<span>수정 '+escapeHTML(p.updatedAt.slice(0,10))+'</span>':''}${p.status==='draft'?'<span>임시 글</span>':''}${p.deletedAt?'<span>휴지통</span>':''}</p>
   ${p.summary?'<p class="reader-summary">'+escapeHTML(p.summary)+'</p>':''}
   ${(p.tags||[]).length?'<div class="reader-tags">'+p.tags.map(t=>`<button data-note-action="tag" data-tag="${escapeHTML(t)}">#${escapeHTML(t)}</button>`).join('')+'</div>':''}</header>
   ${this.reading.controls()}
