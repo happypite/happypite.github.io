@@ -112,3 +112,10 @@ body[data-page=about] .site-header,body[data-page=about] .fallback-scene{backgro
 body[data-page=about] #experience,body[data-page=about] .grain{visibility:hidden}
 
 .pf-rail nav button{min-height:44px}.pf-selects select,.pf-tag-filter button,.pf-category-directory .about-topics>button{min-height:44px}.pf-intro,.pf-content dd,.pf-values p{overflow-wrap:anywhere}
+
+/* The sticky offset equals its initial sheet inset, so the rail never drifts. */
+.pf-sheet{--portfolio-rail-top:48px}.pf-rail{top:var(--portfolio-rail-top)}
+@media(max-width:1000px){.pf-sheet{--portfolio-rail-top:38px}}
+@media(max-width:700px){.pf-sheet{--portfolio-rail-top:27px}.pf-rail{top:var(--portfolio-rail-top)}}
+@media(max-width:450px){.pf-sheet{--portfolio-rail-top:21px}}
+.pf-study-tags{display:inline-flex;align-items:center;min-height:44px;font-size:13px;color:#496b41;text-decoration:underline;text-underline-offset:4px;margin:5px 0 12px}

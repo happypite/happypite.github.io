@@ -1,3 +1,4 @@
+import {cleanTag} from './tag-utils.js';
 import {articleURL,articleListURL} from './article-links.js';
 import {isScrapbook} from './scrap-model.js';
 import {afterInitialPaint} from './startup.js';
@@ -57,7 +58,7 @@ window.addEventListener('pageshow',restoreCatalogPosition);
 
 dialog.addEventListener('click',e=>{if(catalogReader&&e.target.closest('[data-note-action="back"]')){e.preventDefault();e.stopImmediatePropagation();dialog.close();}},true);
 function clearNoteLink(){if(!locationRestorer?.active){const url=new URL(location.href);if(url.searchParams.has('note')){if(history.state?.catalogNote===url.searchParams.get('note'))history.back();else{url.searchParams.delete('note');history.replaceState(history.state,'',url.pathname+url.search+url.hash);}}}document.title='happypite';}
-notes.onListOpen=()=>{if(catalogReader&&notes.tag){catalog.state.query=notes.tag;catalog.setCategory(notes.post?.category||'all');dialog.close();return;}clearNoteLink();};
+notes.onListOpen=()=>{if(catalogReader&&notes.tag){catalog.state.query='';catalog.state.tag=cleanTag(notes.tag);catalog.setCategory(notes.post?.category||'all');dialog.close();return;}clearNoteLink();};
 notes.onCollectionOpen=()=>{catalogReader=false;dialog.classList.remove('catalog-reader');const state={...history.state};delete state.catalogNote;history.replaceState(state,'',location.href);};
 notes.onPostOpen=post=>{if(!locationRestorer?.active){const url=new URL(location.href),same=url.searchParams.get('note')===post.id;url.searchParams.set('note',post.id);if(catalogReader&&!same)history.pushState({...history.state,catalogNote:post.id},'',url.pathname+url.search);else history.replaceState(history.state,'',url.pathname+url.search);}document.title='happypite';};
 dialog.addEventListener('close',()=>{if(!closingForLocation)locationRestorer?.cancel();notes.reading.leave();notes.sequence++;clearTimeout(notes.searchTimer);notes.mode='closed';document.body.classList.remove('notes-open');catalogReader=false;dialog.classList.remove('catalog-reader');engine?.resume();clearNoteLink();const opener=dialogReturnFocus;dialogReturnFocus=null;if(!locationRestorer?.active){const target=opener?.isConnected&&!opener.closest('[hidden],[inert]')&&opener.getClientRects().length?opener:page==='projects'?catalog.search:$('#brand');target.focus({preventScroll:true});}});

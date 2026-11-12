@@ -18,7 +18,7 @@ host.addEventListener('click',event=>{
   event.preventDefault();event.stopImmediatePropagation();
   if(action.dataset.noteAction==='read'){location.assign(articleURL(location.href,action.dataset.id));return;}
   const target=new URL(listURL(),location.origin);
-  if(action.dataset.noteAction==='tag'){target.searchParams.set('q',action.dataset.tag);target.searchParams.set('category',notes.post?.category||'all');}
+  if(action.dataset.noteAction==='tag'){target.searchParams.delete('q');target.searchParams.set('tag',action.dataset.tag);target.searchParams.set('category',notes.post?.category||'all');}
   location.assign(target.pathname+target.search);
  }
 },true);
