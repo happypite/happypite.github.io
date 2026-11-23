@@ -17,3 +17,44 @@ test('resume and restart retain the saved destination and reusable controls',()=
   click('resume');assert.equal(main.scrollTop,460);assert.equal(tools.saved,saved);assert.equal(notice.removed,false);
  }finally{globalThis.document=oldDocument;globalThis.localStorage=oldStorage;}
 });
+
+test('a reader reflow updates progress without saving a new position',()=>{
+ const {document:oldDocument,localStorage:oldStorage,ResizeObserver:oldResizeObserver}=globalThis;
+ const values=new Map(),observed=new Set();
+ const label={textContent:''},bar={style:{}},content={};
+ const body={offsetHeight:2000,getBoundingClientRect:()=>({top:280-main.scrollTop}),querySelector:()=>null,querySelectorAll:()=>[]};
+ const main={
+  scrollTop:500,clientHeight:600,style:{setProperty(){}},addEventListener(){},
+  getBoundingClientRect:()=>({top:80}),querySelector:s=>s==='.markdown-body'?body:null,querySelectorAll:()=>[]
+ };
+ const detail={addEventListener(){}};
+ const elements={'.collection-main':main,'#detail':detail,'#reading-position':label,'#reading-progress-bar':bar};
+ let resize;
+ globalThis.ResizeObserver=class{
+  constructor(callback){resize=callback;}
+  observe(element){observed.add(element);}
+  disconnect(){observed.clear();}
+ };
+ globalThis.document={querySelector:selector=>elements[selector]};
+ globalThis.localStorage={getItem:k=>values.get(k)||null,setItem:(k,v)=>values.set(k,v)};
+ try{
+  const notes={content,post:{id:'reflow-test',date:'2026-11-23',body:'text'},mode:'reader'};
+  const tools=new ReaderTools(notes);
+  tools.mount();
+  assert.deepEqual(observed,new Set([main,content]));
+  assert.equal(label.textContent,'읽기 위치 19%');
+  assert.equal(bar.style.width,'19%');
+  body.offsetHeight=3000;
+  main.clientHeight=700;
+  resize();
+  assert.equal(label.textContent,'읽기 위치 12%');
+  assert.equal(bar.style.width,'12%');
+  assert.equal(JSON.parse(values.get('happypite.reading-history'))[0].progress,0);
+  tools.leave();
+  assert.equal(observed.size,0);
+ }finally{
+  globalThis.document=oldDocument;
+  globalThis.localStorage=oldStorage;
+  globalThis.ResizeObserver=oldResizeObserver;
+ }
+});

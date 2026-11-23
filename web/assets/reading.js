@@ -29,6 +29,7 @@ export function readingOptions(_canManage,_size=18,showProgress=false){
 export class ReaderTools{
  constructor(notes){this.notes=notes;this.main=document.querySelector('.collection-main');this.size=18;
   this.main.addEventListener('scroll',()=>{if(notes.mode!=='reader'||this.frame)return;this.frame=requestAnimationFrame(()=>{this.frame=0;this.update(true);});},{passive:true});
+  if(typeof ResizeObserver==='function')this.resizeObserver=new ResizeObserver(()=>this.update());
   document.querySelector('#detail').addEventListener('click',e=>{const b=e.target.closest('[data-reader-action]');if(!b)return;const action=b.dataset.readerAction;
    if(action==='share')this.share();if(action==='top')this.main.scrollTo({top:0,behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'instant':'smooth'});
    if(action==='resume'&&this.saved){const saved=this.saved;this.resumeStatus='저장된 '+Math.round(saved.progress*100)+'% 위치로 이동했습니다.';this.updateResumeStatus();const target=document.getElementById(saved.anchor),body=this.main.querySelector('.markdown-body'),rect=this.main.getBoundingClientRect();let top;if(target&&this.main.contains(target))top=this.main.scrollTop+target.getBoundingClientRect().top-rect.top+saved.offset;else{const start=this.main.scrollTop+body.getBoundingClientRect().top-rect.top;top=start+saved.progress*Math.max(1,body.offsetHeight-this.main.clientHeight*.65);}this.main.scrollTo({top,behavior:'instant'});this.update(true);}
@@ -39,10 +40,12 @@ export class ReaderTools{
  mount(){const post=this.notes.post;this.main.style.setProperty('--reading-size',readingSize(post.fontSize)+'px');
   if(post.id!==this.currentId){this.currentId=post.id;this.saved=savedPosition(post);this.resumeStatus='';if(!this.saved)rememberReading(post,0);}
   if(this.saved&&!this.main.querySelector('.resume-reading')){const host=document.querySelector('#reader-feedback');host.insertAdjacentHTML('beforeend','<div class="resume-reading"><span data-resume-message role="status" aria-live="polite">지난번에 '+Math.round(this.saved.progress*100)+'%까지 읽었습니다.</span><button data-reader-action="resume">이어서 읽기 →</button><button data-reader-action="restart">처음부터</button></div>');}
+  this.resizeObserver?.observe(this.main);
+  this.resizeObserver?.observe(this.notes.content);
   this.updateResumeStatus();this.update();
  }
  updateResumeStatus(){const label=this.main.querySelector('[data-resume-message]');if(label&&this.resumeStatus)label.textContent=this.resumeStatus;}
- leave(){clearTimeout(this.saveTimer);if(this.pending){rememberReading(this.pending.post,this.pending.progress,this.pending.position);this.pending=null;}this.currentId=null;this.saved=null;}
+ leave(){this.resizeObserver?.disconnect();clearTimeout(this.saveTimer);if(this.pending){rememberReading(this.pending.post,this.pending.progress,this.pending.position);this.pending=null;}this.currentId=null;this.saved=null;}
  update(track=false){if(this.notes.mode!=='reader')return;const body=this.main.querySelector('.markdown-body');if(!body)return;const rect=this.main.getBoundingClientRect(),start=this.main.scrollTop+body.getBoundingClientRect().top-rect.top,end=start+body.offsetHeight-this.main.clientHeight*.65,progress=Math.min(1,Math.max(0,(this.main.scrollTop-start)/Math.max(1,end-start))),percent=Math.round(progress*100),bar=document.querySelector('#reading-progress-bar'),label=document.querySelector('#reading-position');if(bar)bar.style.width=percent+'%';if(label)label.textContent='읽기 위치 '+percent+'%';let active=body.querySelector('h2,h3,h4,h5,h6');for(const h of body.querySelectorAll('h2,h3,h4,h5,h6'))if(h.getBoundingClientRect().top<rect.top+145)active=h;for(const a of this.main.querySelectorAll('.reader-toc a')){if(a.getAttribute('href')==='#'+active?.id)a.setAttribute('aria-current','location');else a.removeAttribute('aria-current');}
   if(track&&progress>.02){this.pending={post:this.notes.post,progress,position:{anchor:active?.id||'',offset:active?rect.top-active.getBoundingClientRect().top:0}};clearTimeout(this.saveTimer);this.saveTimer=setTimeout(()=>{if(this.pending){rememberReading(this.pending.post,this.pending.progress,this.pending.position);this.pending=null;}},250);}
  }
