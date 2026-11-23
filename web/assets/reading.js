@@ -23,7 +23,7 @@ export function postMarkdown(post){
 export function tocMarkup(html){const headings=[...html.matchAll(/<h([2-6]) id="([^"]+)">(.*?)<\/h[2-6]>/g)];return headings.length?'<details class="reader-toc" '+(headings.length<=3?'open':'')+'><summary>이 노트의 목차 <span>'+headings.length+'개</span></summary><nav>'+headings.map(h=>'<a href="#'+h[2]+'" style="--level:'+h[1]+'">'+h[3].replace(/<[^>]*>/g,'')+'</a>').join('')+'</nav></details>':'';}
 
 export function readingOptions(_canManage,_size=18,showProgress=false){
- return showProgress?'<div class="reading-options"><span class="reading-position" id="reading-position">읽기 위치 0%</span></div><div class="reading-progress" aria-hidden="true"><span id="reading-progress-bar"></span></div>':'';
+ return showProgress?'<div class="reader-progress"><div class="reading-options"><span class="reading-position" id="reading-position">읽기 위치 0%</span></div><div class="reading-progress" aria-hidden="true"><span id="reading-progress-bar"></span></div></div>':'';
 }
 
 export class ReaderTools{
